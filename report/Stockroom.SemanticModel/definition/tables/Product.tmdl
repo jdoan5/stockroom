@@ -1,43 +1,51 @@
 /// One row per product (source: view rpt.dim_product).
 table Product
+	lineageTag: 6ccc89eb-0a42-4558-9bbc-026d67a21669
 
 	column 'Product ID'
 		dataType: int64
 		isHidden
 		isKey
 		formatString: 0
+		lineageTag: 4764cf6c-7259-4235-ba0f-fde8741160dc
 		summarizeBy: none
 		sourceColumn: product_id
 
 	column SKU
 		dataType: string
+		lineageTag: eb3aea53-6889-4894-8fdf-1d1c2d91c4b9
 		summarizeBy: none
 		sourceColumn: sku
 
 	column Product
 		dataType: string
+		lineageTag: 98babbc4-6af6-44c5-b218-e03cf8ad4cba
 		summarizeBy: none
 		sourceColumn: product_name
 
 	column Category
 		dataType: string
+		lineageTag: a7a967e4-5aba-49ed-97ee-f8072ea8a7f5
 		summarizeBy: none
 		sourceColumn: category
 
 	column Subcategory
 		dataType: string
+		lineageTag: c881a396-059b-4dc6-aca9-7aee0863c17c
 		summarizeBy: none
 		sourceColumn: subcategory
 
 	column 'Unit Cost'
 		dataType: decimal
 		formatString: \$#,0.00
+		lineageTag: 7fea88ac-06fd-41d5-a620-eac1a33776c6
 		summarizeBy: none
 		sourceColumn: unit_cost
 
 	column 'Unit Price'
 		dataType: decimal
 		formatString: \$#,0.00
+		lineageTag: 5633feb2-e9a8-4abe-bd53-df4f8004b778
 		summarizeBy: none
 		sourceColumn: unit_price
 
@@ -45,6 +53,7 @@ table Product
 		dataType: boolean
 		isHidden
 		formatString: """TRUE"";""TRUE"";""FALSE"""
+		lineageTag: 1e6d654d-0060-490f-99e5-8a576f27ee92
 		summarizeBy: none
 		sourceColumn: is_active
 

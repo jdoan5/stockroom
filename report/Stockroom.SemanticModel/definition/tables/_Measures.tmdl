@@ -1,60 +1,72 @@
 /// Home for the model's measures. Its only column is hidden, so Desktop shows it as a measure table.
 table _Measures
+	lineageTag: e72a8f1b-9a7c-4a1f-b214-e4afd27bc511
 
 	/// Units in stock right now.
 	measure 'Units on Hand' = SUM ( Stock[Quantity] )
 		formatString: #,0
 		displayFolder: Stock
+		lineageTag: 4339bcba-9cab-4eb7-b350-ac03d312a2a4
 
 	/// Value of the stock on hand at unit cost.
 	measure 'Stock Value (Cost)' = SUM ( Stock[Value at Cost] )
 		formatString: \$#,0
 		displayFolder: Stock
+		lineageTag: 357752cd-b6ae-4aca-b17c-b62ed83c334e
 
 	/// Value of the stock on hand at unit price.
 	measure 'Stock Value (Retail)' = SUM ( Stock[Value at Retail] )
 		formatString: \$#,0
 		displayFolder: Stock
+		lineageTag: a156dc97-bcf3-449e-831a-0fd13eb5d36d
 
 	/// Retail value minus cost value of the stock on hand.
 	measure 'Potential Margin' = [Stock Value (Retail)] - [Stock Value (Cost)]
 		formatString: \$#,0
 		displayFolder: Stock
+		lineageTag: b77f7e85-d940-4ad7-836b-14ada5ff9199
 
 	/// Potential margin as a share of the retail value.
 	measure 'Margin %' = DIVIDE ( [Potential Margin], [Stock Value (Retail)] )
 		formatString: 0.0%;-0.0%;0.0%
 		displayFolder: Stock
+		lineageTag: 62b90850-29bd-4d60-8e03-f8744f883b49
 
 	/// Number of product x warehouse balances.
 	measure 'Stock Positions' = COUNTROWS ( Stock )
 		formatString: #,0
 		displayFolder: Stock
+		lineageTag: 100a3f68-255a-40a1-a294-d52525fc6fc1
 
 	/// Balances below their reorder point (out of stock included); 0 when there are none.
 	measure 'Low Stock Items' = COALESCE ( CALCULATE ( COUNTROWS ( Stock ), KEEPFILTERS ( Stock[Is Low Stock] = TRUE () ) ), 0 )
 		formatString: #,0
 		displayFolder: Stock
+		lineageTag: 85129220-dd8f-46d8-9c5e-090d30d67886
 
 	/// Balances with a quantity of zero that are below their reorder point; 0 when there are none.
 	measure 'Out of Stock Items' = COALESCE ( CALCULATE ( COUNTROWS ( Stock ), KEEPFILTERS ( Stock[Stock Status] = "Out of stock" ) ), 0 )
 		formatString: #,0
 		displayFolder: Stock
+		lineageTag: a91a9f4a-889d-4c39-bce7-ba6ecaa9ddde
 
 	/// Sum of the reorder points.
 	measure 'Reorder Level' = SUM ( Stock[Reorder Point] )
 		formatString: #,0
 		displayFolder: Stock
+		lineageTag: 7fb80f4a-0cff-4e10-bbf6-0063640ce837
 
 	/// Units needed to bring every low balance back up to its reorder point.
 	measure 'Units Below Reorder' = SUM ( Stock[Below Reorder Qty] )
 		formatString: #,0
 		displayFolder: Stock
+		lineageTag: 3b13cb8d-cb3b-455b-9a97-ece47743c31f
 
 	/// Units to order: the reorder quantity, or the shortfall if that is larger.
 	measure 'Suggested Order Units' = SUM ( Stock[Suggested Order Qty] )
 		formatString: #,0
 		displayFolder: Stock
+		lineageTag: 38979b63-443b-47f4-809e-302ceafe5025
 
 	/// Background colour for a Stock Status cell: red for Out of stock, amber for Low, blank otherwise.
 	measure 'Status Color' =
@@ -64,11 +76,13 @@ table _Measures
 			    "Low", "#FBE3A7"
 			)
 		displayFolder: Stock
+		lineageTag: 861f87cf-3be7-4a18-b404-44170ef93948
 
 	/// Number of distinct purchase orders.
 	measure 'Purchase Orders' = DISTINCTCOUNT ( 'Purchase Order Line'[PO Number] )
 		formatString: #,0
 		displayFolder: Purchasing
+		lineageTag: 882be0f0-7fc3-4363-9d03-a34d4a27f05f
 
 	/// Purchase orders placed but not fully received.
 	measure 'Open POs' =
@@ -78,6 +92,7 @@ table _Measures
 			)
 		formatString: #,0
 		displayFolder: Purchasing
+		lineageTag: 4f0f4d04-2f34-4ba9-9134-d8528661f0e4
 
 	/// Open purchase orders past their expected date.
 	measure 'Overdue POs' =
@@ -87,31 +102,37 @@ table _Measures
 			)
 		formatString: #,0
 		displayFolder: Purchasing
+		lineageTag: 2a92b848-2a78-4be9-a302-3e0c9d4389c6
 
 	/// Value ordered (quantity ordered x unit cost).
 	measure 'PO Value' = SUM ( 'Purchase Order Line'[Ordered Value] )
 		formatString: \$#,0
 		displayFolder: Purchasing
+		lineageTag: be0c0311-383d-4a29-8175-cb22b9fe5bb0
 
 	/// Value received so far (quantity received x unit cost).
 	measure 'PO Value Received' = SUM ( 'Purchase Order Line'[Received Value] )
 		formatString: \$#,0
 		displayFolder: Purchasing
+		lineageTag: a490d57b-62ff-494b-8af0-16788ae229c9
 
 	/// Value still to be received on open purchase orders.
 	measure 'Open PO Value' = SUM ( 'Purchase Order Line'[Open Value] )
 		formatString: \$#,0
 		displayFolder: Purchasing
+		lineageTag: 9c1e999c-beea-4b0e-9e4f-e2bf167cce9a
 
 	/// Units ordered.
 	measure 'Units Ordered' = SUM ( 'Purchase Order Line'[Quantity Ordered] )
 		formatString: #,0
 		displayFolder: Purchasing
+		lineageTag: 95d4c790-a191-4e9c-b641-66f43d62ab5d
 
 	/// Units received.
 	measure 'Units Received' = SUM ( 'Purchase Order Line'[Quantity Received] )
 		formatString: #,0
 		displayFolder: Purchasing
+		lineageTag: a4d1364a-42df-44bc-a1dc-5759f34f1001
 
 	/// Units received as a share of units ordered, over orders that were placed (not DRAFT or CANCELLED).
 	measure 'Fill Rate %' =
@@ -127,6 +148,7 @@ table _Measures
 			    )
 		formatString: 0.0%;-0.0%;0.0%
 		displayFolder: Purchasing
+		lineageTag: 9521e223-b349-476f-b185-e9bc7c68e196
 
 	/// Average days from order to receipt per purchase order; orders not yet received are ignored.
 	measure 'Avg Lead Time (days)' =
@@ -136,29 +158,32 @@ table _Measures
 			)
 		formatString: 0.0
 		displayFolder: Purchasing
+		lineageTag: 9e6886e7-4439-4e81-bd9d-422fcccf9b01
 
 	/// Units that came in (receipts, transfers in, positive adjustments).
 	measure 'Units In' = SUM ( Movement[Quantity In] )
 		formatString: #,0
 		displayFolder: Movements
+		lineageTag: 95f83732-6e24-4845-9ebb-337bf26cb341
 
 	/// Units that went out (shipments, transfers out, negative adjustments).
 	measure 'Units Out' = SUM ( Movement[Quantity Out] )
 		formatString: #,0
 		displayFolder: Movements
+		lineageTag: 53873cfb-1865-4102-911a-da6675587c65
 
 	/// Units in minus units out.
 	measure 'Net Units' = SUM ( Movement[Signed Quantity] )
 		formatString: #,0
 		displayFolder: Movements
+		lineageTag: afd00933-db4d-46d3-9f72-fb9f91fdb6ba
 
 	column Value
-		dataType: int64
 		isHidden
 		formatString: 0
+		lineageTag: d3d1b1d8-0371-43aa-a444-298a057851d8
 		summarizeBy: none
 		isNameInferred
-		isDataTypeInferred
 		sourceColumn: [Value]
 
 	partition _Measures = calculated

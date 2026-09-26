@@ -1,26 +1,31 @@
 /// One row per supplier (source: view rpt.dim_supplier).
 table Supplier
+	lineageTag: 4e0b4b66-9cee-4229-93f9-be4bf3263180
 
 	column 'Supplier ID'
 		dataType: int64
 		isHidden
 		isKey
 		formatString: 0
+		lineageTag: 8fb72b4e-ccbd-4252-82a0-0c718510d204
 		summarizeBy: none
 		sourceColumn: supplier_id
 
 	column Supplier
 		dataType: string
+		lineageTag: 16931c18-ff94-44f7-a114-f088986a794d
 		summarizeBy: none
 		sourceColumn: supplier_name
 
 	column City
 		dataType: string
+		lineageTag: 5fec78c6-df33-4f1f-934e-0fef08fc9716
 		summarizeBy: none
 		sourceColumn: city
 
 	column Country
 		dataType: string
+		lineageTag: d6a9a605-5e97-4b3f-8700-13164ae258a4
 		summarizeBy: none
 		sourceColumn: country
 
@@ -28,6 +33,7 @@ table Supplier
 		dataType: boolean
 		isHidden
 		formatString: """TRUE"";""TRUE"";""FALSE"""
+		lineageTag: b7c5b7b9-b531-46e4-8d71-3820483de984
 		summarizeBy: none
 		sourceColumn: is_active
 
@@ -41,5 +47,5 @@ table Supplier
 				in
 				    Columns
 
-	annotation PBI_ResultType = Table
+	annotation PBI_ResultType = Exception
 

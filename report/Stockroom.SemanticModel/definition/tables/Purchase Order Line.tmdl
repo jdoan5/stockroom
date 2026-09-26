@@ -1,15 +1,18 @@
 /// One row per purchase order line, header fields repeated (source: view rpt.fact_po_line).
 table 'Purchase Order Line'
+	lineageTag: 07320276-c9e3-4a49-a531-1405bfad7d0b
 
 	column 'PO Line ID'
 		dataType: int64
 		isHidden
 		formatString: 0
+		lineageTag: b20e0269-84b3-4dfc-b707-97bb6d78fedf
 		summarizeBy: none
 		sourceColumn: po_item_id
 
 	column 'PO Number'
 		dataType: string
+		lineageTag: 2aaf6aff-586a-41ee-a7ec-4d8aaf179c93
 		summarizeBy: none
 		sourceColumn: po_number
 
@@ -17,6 +20,7 @@ table 'Purchase Order Line'
 		dataType: int64
 		isHidden
 		formatString: 0
+		lineageTag: 177dec9b-74ae-4856-8568-a4954a1a476f
 		summarizeBy: none
 		sourceColumn: supplier_id
 
@@ -24,6 +28,7 @@ table 'Purchase Order Line'
 		dataType: int64
 		isHidden
 		formatString: 0
+		lineageTag: 33d811d6-0426-44c7-8583-70d9492462af
 		summarizeBy: none
 		sourceColumn: warehouse_id
 
@@ -31,11 +36,13 @@ table 'Purchase Order Line'
 		dataType: int64
 		isHidden
 		formatString: 0
+		lineageTag: 8c6ffb9f-53f2-4ccd-90f6-d8a7b5803831
 		summarizeBy: none
 		sourceColumn: product_id
 
 	column 'PO Status'
 		dataType: string
+		lineageTag: 274338f8-6db5-4bb7-bfbf-3e19d00c7e8d
 		summarizeBy: none
 		sourceColumn: po_status
 		sortByColumn: 'PO Status Sort'
@@ -44,12 +51,14 @@ table 'Purchase Order Line'
 		dataType: int64
 		isHidden
 		formatString: 0
+		lineageTag: 59b17773-743a-460c-a8c9-3112d3b96c76
 		summarizeBy: none
 		sourceColumn: po_status_sort
 
 	column 'Order Date'
 		dataType: dateTime
 		formatString: Short Date
+		lineageTag: 88029973-89bd-46e4-9842-56bb7324f6ec
 		summarizeBy: none
 		sourceColumn: order_date
 
@@ -58,6 +67,7 @@ table 'Purchase Order Line'
 	column 'Expected Date'
 		dataType: dateTime
 		formatString: Short Date
+		lineageTag: c048e875-a6c7-4c88-b92f-7434170337c2
 		summarizeBy: none
 		sourceColumn: expected_date
 
@@ -66,6 +76,7 @@ table 'Purchase Order Line'
 	column 'Received Date'
 		dataType: dateTime
 		formatString: Short Date
+		lineageTag: aad62372-4a09-42cc-9113-d5d7ce16701c
 		summarizeBy: none
 		sourceColumn: received_date
 
@@ -76,6 +87,7 @@ table 'Purchase Order Line'
 		dataType: int64
 		isHidden
 		formatString: 0
+		lineageTag: c066df43-4cb5-4efe-87bf-e7a29a95efef
 		summarizeBy: none
 		sourceColumn: lead_time_days
 
@@ -83,6 +95,7 @@ table 'Purchase Order Line'
 		dataType: int64
 		isHidden
 		formatString: 0
+		lineageTag: 7b11b362-c1eb-47d2-9801-e11e247e1775
 		summarizeBy: none
 		sourceColumn: quantity_ordered
 
@@ -90,6 +103,7 @@ table 'Purchase Order Line'
 		dataType: int64
 		isHidden
 		formatString: 0
+		lineageTag: 95712eac-2548-44ec-8a45-6e24a23522bb
 		summarizeBy: none
 		sourceColumn: quantity_received
 
@@ -97,6 +111,7 @@ table 'Purchase Order Line'
 		dataType: int64
 		isHidden
 		formatString: 0
+		lineageTag: 93095938-b7c7-4f50-959b-479439704f96
 		summarizeBy: none
 		sourceColumn: quantity_open
 
@@ -104,6 +119,7 @@ table 'Purchase Order Line'
 		dataType: decimal
 		isHidden
 		formatString: \$#,0.00
+		lineageTag: 8bded7af-e47c-4ad4-9666-3fb894f5340f
 		summarizeBy: none
 		sourceColumn: unit_cost
 
@@ -111,6 +127,7 @@ table 'Purchase Order Line'
 		dataType: decimal
 		isHidden
 		formatString: \$#,0.00
+		lineageTag: e884c2c5-bf3d-44f9-80ac-92655c9bff51
 		summarizeBy: none
 		sourceColumn: ordered_value
 
@@ -118,6 +135,7 @@ table 'Purchase Order Line'
 		dataType: decimal
 		isHidden
 		formatString: \$#,0.00
+		lineageTag: 42318457-c4bb-4256-a6d2-914be560d512
 		summarizeBy: none
 		sourceColumn: received_value
 
@@ -125,6 +143,7 @@ table 'Purchase Order Line'
 		dataType: decimal
 		isHidden
 		formatString: \$#,0.00
+		lineageTag: 38a146a2-db41-4824-bf2d-66a5fb149661
 		summarizeBy: none
 		sourceColumn: open_value
 
@@ -132,6 +151,7 @@ table 'Purchase Order Line'
 	column 'Is Open'
 		dataType: boolean
 		formatString: """TRUE"";""TRUE"";""FALSE"""
+		lineageTag: 88bc1b5f-67f0-4994-9d12-4807379983fd
 		summarizeBy: none
 		sourceColumn: is_open
 
@@ -139,6 +159,7 @@ table 'Purchase Order Line'
 	column 'Is Overdue'
 		dataType: boolean
 		formatString: """TRUE"";""TRUE"";""FALSE"""
+		lineageTag: 71ff1cbf-31cb-46d5-991a-ff5b8abb714c
 		summarizeBy: none
 		sourceColumn: is_overdue
 

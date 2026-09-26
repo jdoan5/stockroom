@@ -2,15 +2,15 @@
   "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.9.0/schema.json",
   "name": "valueByStatus",
   "position": {
-    "x": 16,
-    "y": 472,
-    "z": 7000,
-    "height": 232,
-    "width": 500,
-    "tabOrder": 7000
+    "x": 648,
+    "y": 224,
+    "z": 6000,
+    "height": 216,
+    "width": 616,
+    "tabOrder": 6000
   },
   "visual": {
-    "visualType": "clusteredColumnChart",
+    "visualType": "clusteredBarChart",
     "query": {
       "queryState": {
         "Category": {
@@ -99,6 +99,19 @@
               "expr": {
                 "Literal": {
                   "Value": "'Purchase order value by status'"
+                }
+              }
+            }
+          }
+        }
+      ],
+      "subTitle": [
+        {
+          "properties": {
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "false"
                 }
               }
             }

@@ -5,8 +5,8 @@
     "x": 16,
     "y": 224,
     "z": 5000,
-    "height": 232,
-    "width": 500,
+    "height": 216,
+    "width": 616,
     "tabOrder": 5000
   },
   "visual": {
@@ -99,6 +99,19 @@
               "expr": {
                 "Literal": {
                   "Value": "'Purchase order value by supplier'"
+                }
+              }
+            }
+          }
+        }
+      ],
+      "subTitle": [
+        {
+          "properties": {
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "false"
                 }
               }
             }

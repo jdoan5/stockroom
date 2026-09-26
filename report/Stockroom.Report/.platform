@@ -1,0 +1,11 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/gitIntegration/platformProperties/2.0.0/schema.json",
+  "metadata": {
+    "type": "Report",
+    "displayName": "Stockroom"
+  },
+  "config": {
+    "version": "2.0",
+    "logicalId": "2d5989b9-d0c0-483a-b11f-c0f4d788abfb"
+  }
+}

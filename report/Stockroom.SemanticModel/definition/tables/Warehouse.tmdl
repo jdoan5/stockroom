@@ -1,32 +1,38 @@
 /// One row per warehouse (source: view rpt.dim_warehouse).
 table Warehouse
+	lineageTag: 3de92f77-e7c3-4985-a05d-e143d785cfbd
 
 	column 'Warehouse ID'
 		dataType: int64
 		isHidden
 		isKey
 		formatString: 0
+		lineageTag: 3c07898e-9c10-457e-a56b-b972a61bbc0c
 		summarizeBy: none
 		sourceColumn: warehouse_id
 
 	/// Warehouse code, e.g. WH-EAST.
 	column Warehouse
 		dataType: string
+		lineageTag: 93309253-4b0c-4cb7-870d-f4364068310b
 		summarizeBy: none
 		sourceColumn: warehouse_code
 
 	column 'Warehouse Name'
 		dataType: string
+		lineageTag: 36fb32bc-564a-4853-8887-653dc67ac50c
 		summarizeBy: none
 		sourceColumn: warehouse_name
 
 	column City
 		dataType: string
+		lineageTag: d267e8c3-aa07-4940-aebb-b946c7c04cf6
 		summarizeBy: none
 		sourceColumn: city
 
 	column Country
 		dataType: string
+		lineageTag: 5e14c6c6-10b7-4fe3-a1b3-65ee0863b35f
 		summarizeBy: none
 		sourceColumn: country
 
@@ -34,6 +40,7 @@ table Warehouse
 		dataType: boolean
 		isHidden
 		formatString: """TRUE"";""TRUE"";""FALSE"""
+		lineageTag: 89830aae-f884-4a83-bdd2-733b3dac3f06
 		summarizeBy: none
 		sourceColumn: is_active
 

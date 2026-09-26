@@ -65,6 +65,24 @@
           }
         }
       ]
+    },
+    "objects": {
+      "value": [
+        {
+          "properties": {
+            "labelDisplayUnits": {
+              "expr": {
+                "Literal": {
+                  "Value": "1D"
+                }
+              }
+            }
+          },
+          "selector": {
+            "metadata": "_Measures.Open PO Value"
+          }
+        }
+      ]
     }
   }
 }

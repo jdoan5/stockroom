@@ -2,12 +2,12 @@
   "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.9.0/schema.json",
   "name": "poTable",
   "position": {
-    "x": 532,
-    "y": 224,
-    "z": 6000,
-    "height": 480,
-    "width": 732,
-    "tabOrder": 6000
+    "x": 16,
+    "y": 456,
+    "z": 7000,
+    "height": 248,
+    "width": 1248,
+    "tabOrder": 7000
   },
   "visual": {
     "visualType": "tableEx",

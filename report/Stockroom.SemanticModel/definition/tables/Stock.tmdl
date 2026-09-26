@@ -1,10 +1,12 @@
 /// Current balance, one row per product x warehouse (source: view rpt.fact_stock).
 table Stock
+	lineageTag: de07c778-7bd2-4cb8-80fb-f34a81f39f98
 
 	column 'Product ID'
 		dataType: int64
 		isHidden
 		formatString: 0
+		lineageTag: d1f7999e-7692-4e43-a570-86115b582527
 		summarizeBy: none
 		sourceColumn: product_id
 
@@ -12,6 +14,7 @@ table Stock
 		dataType: int64
 		isHidden
 		formatString: 0
+		lineageTag: 45537cf6-972f-4fae-8e87-79187cdb47ad
 		summarizeBy: none
 		sourceColumn: warehouse_id
 
@@ -19,6 +22,7 @@ table Stock
 		dataType: int64
 		isHidden
 		formatString: 0
+		lineageTag: d740bd87-231a-46e5-8a3c-62e19422e191
 		summarizeBy: none
 		sourceColumn: quantity
 
@@ -26,6 +30,7 @@ table Stock
 		dataType: int64
 		isHidden
 		formatString: 0
+		lineageTag: 896ef1c3-1192-400f-a7af-7109e398f793
 		summarizeBy: none
 		sourceColumn: reorder_point
 
@@ -33,12 +38,14 @@ table Stock
 	column 'Is Low Stock'
 		dataType: boolean
 		formatString: """TRUE"";""TRUE"";""FALSE"""
+		lineageTag: 2ade70d4-4331-4fc7-a131-47323198efec
 		summarizeBy: none
 		sourceColumn: is_low_stock
 
 	/// Out of stock, Low or OK.
 	column 'Stock Status'
 		dataType: string
+		lineageTag: 69710a3b-6d34-4b51-91da-603d91a7dcd5
 		summarizeBy: none
 		sourceColumn: stock_status
 		sortByColumn: 'Stock Status Sort'
@@ -47,6 +54,7 @@ table Stock
 		dataType: int64
 		isHidden
 		formatString: 0
+		lineageTag: f65d15a9-1563-47af-ad4b-ad96a431d918
 		summarizeBy: none
 		sourceColumn: stock_status_sort
 
@@ -54,6 +62,7 @@ table Stock
 		dataType: int64
 		isHidden
 		formatString: 0
+		lineageTag: 1a99e392-7ec3-4f6e-8a1b-c5d37120b8fe
 		summarizeBy: none
 		sourceColumn: units_below_reorder
 
@@ -61,6 +70,7 @@ table Stock
 		dataType: int64
 		isHidden
 		formatString: 0
+		lineageTag: 192aef5e-b710-4b16-a4f1-092bdc8a66cf
 		summarizeBy: none
 		sourceColumn: suggested_order_qty
 
@@ -68,6 +78,7 @@ table Stock
 		dataType: decimal
 		isHidden
 		formatString: \$#,0.00
+		lineageTag: d4af3cfe-c775-4821-bd49-6fa7dde7ca9b
 		summarizeBy: none
 		sourceColumn: value_at_cost
 
@@ -75,6 +86,7 @@ table Stock
 		dataType: decimal
 		isHidden
 		formatString: \$#,0.00
+		lineageTag: 8bc7f6b3-d564-4b69-85ef-32e9c2bdadf5
 		summarizeBy: none
 		sourceColumn: value_at_retail
 
