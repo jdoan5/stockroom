@@ -11,7 +11,7 @@ ported from PostgreSQL to T-SQL.
 |---|---|---|
 | 1 | SQL Server database — schema, seed, views, triggers, stored procedures | ✅ done |
 | 2 | ASP.NET Core MVC pages — dashboard, stock, low stock, purchase orders | ✅ done |
-| 3 | jQuery forms — transfer stock, receive a purchase order | |
+| 3 | jQuery forms — transfer stock, receive a purchase order | ✅ done |
 | 4 | Power BI report on the reporting views | |
 
 ## Run it
@@ -32,6 +32,14 @@ the database through [Dapper](https://github.com/DapperLib/Dapper). All queries 
 through the reporting views in `db/03_views.sql`, parameterised, and run unchanged
 in DataGrip. The connection string comes from `.env` via `make run`; no password is
 stored in `appsettings.json`.
+
+The write paths are jQuery over AJAX: **Transfer stock** validates in the browser
+(jQuery unobtrusive validation, driven by the C# data annotations), posts to the
+`transfer_stock` procedure, and live-reloads the product's stock panel; **Receive**
+on the purchase orders page calls `receive_purchase_order` and reloads just the
+table. Errors the procedures `THROW` (50001–50011) are mapped to the form field
+they belong to, so "Insufficient stock at WH-WEST: have 235, need 9999" appears
+under Quantity. Both endpoints require an anti-forgery token.
 
 Connect from DataGrip: `localhost:1433`, database `Stockroom`, user `sa`, password from `.env`.
 
