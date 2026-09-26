@@ -3,7 +3,7 @@ export
 
 SQLCMD = docker exec -i stockroom-db /opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P "$$MSSQL_SA_PASSWORD" -C -b
 
-.PHONY: env up db verify down reset
+.PHONY: env up db verify down reset run
 
 env:     ## create .env with a random SA password (you still set ACCEPT_EULA)
 	@test -f .env || { cp .env.example .env; pw=$$(openssl rand -base64 18 | tr -d "/+=")Aa1!; sed -i "" "s|^MSSQL_SA_PASSWORD=.*|MSSQL_SA_PASSWORD=$$pw|" .env; echo "created .env"; }
@@ -20,6 +20,12 @@ verify:  ## run the checks
 	$(SQLCMD) -d Stockroom -i /db/90_verify.sql
 
 reset: db verify  ## rebuild from scratch and check
+
+# TrustServerCertificate: the container uses a self-signed certificate. Local dev only.
+CONN = Server=localhost,1433;Database=Stockroom;User Id=sa;Password=$$MSSQL_SA_PASSWORD;TrustServerCertificate=True
+
+run:     ## run the web app at http://localhost:5271
+	cd src/Stockroom.Web && ConnectionStrings__Stockroom="$(CONN)" dotnet run --launch-profile http
 
 down:    ## stop SQL Server (data is kept in a volume)
 	docker compose down

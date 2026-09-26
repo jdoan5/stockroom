@@ -1,0 +1,37 @@
+@model IReadOnlyList<PurchaseOrderRow>
+@{ ViewData["Title"] = "Purchase orders"; }
+
+<h1 class="h3 mb-3">Purchase orders</h1>
+
+<table class="table table-sm align-middle">
+    <thead><tr>
+        <th>PO</th><th>Supplier</th><th>Warehouse</th><th>Status</th>
+        <th>Ordered</th><th>Expected</th><th>Received</th>
+        <th class="text-end">Lines</th><th class="text-end">Received / ordered</th><th class="text-end">Value</th>
+    </tr></thead>
+    <tbody>
+    @foreach (var po in Model)
+    {
+        var badge = po.Status switch
+        {
+            "RECEIVED" => "text-bg-success",
+            "PARTIALLY_RECEIVED" => "text-bg-warning",
+            "PLACED" => "text-bg-primary",
+            "CANCELLED" => "text-bg-dark",
+            _ => "text-bg-secondary"
+        };
+        <tr>
+            <td class="font-monospace">@po.PoNumber</td>
+            <td>@po.SupplierName</td>
+            <td>@po.WarehouseCode</td>
+            <td><span class="badge @badge">@po.Status.Replace('_', ' ')</span></td>
+            <td>@po.OrderDate.ToString("yyyy-MM-dd")</td>
+            <td>@po.ExpectedDate?.ToString("yyyy-MM-dd")</td>
+            <td>@po.ReceivedDate?.ToString("yyyy-MM-dd")</td>
+            <td class="text-end">@po.LineCount</td>
+            <td class="text-end">@po.TotalReceived / @po.TotalOrdered</td>
+            <td class="text-end">@po.TotalValue.ToString("C0")</td>
+        </tr>
+    }
+    </tbody>
+</table>

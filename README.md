@@ -10,7 +10,7 @@ ported from PostgreSQL to T-SQL.
 | # | Stage | Status |
 |---|---|---|
 | 1 | SQL Server database — schema, seed, views, triggers, stored procedures | ✅ done |
-| 2 | ASP.NET Core MVC pages — stock, low stock, purchase orders | |
+| 2 | ASP.NET Core MVC pages — dashboard, stock, low stock, purchase orders | ✅ done |
 | 3 | jQuery forms — transfer stock, receive a purchase order | |
 | 4 | Power BI report on the reporting views | |
 
@@ -24,7 +24,14 @@ make env      # creates .env with a random SA password
 make up       # start SQL Server
 make db       # create the database and run db/01..05
 make verify   # run the checks
+make run      # web app at http://localhost:5271
 ```
+
+The web app is ASP.NET Core MVC (.NET 10) — controllers and Razor views — reading
+the database through [Dapper](https://github.com/DapperLib/Dapper). All queries go
+through the reporting views in `db/03_views.sql`, parameterised, and run unchanged
+in DataGrip. The connection string comes from `.env` via `make run`; no password is
+stored in `appsettings.json`.
 
 Connect from DataGrip: `localhost:1433`, database `Stockroom`, user `sa`, password from `.env`.
 

@@ -1,0 +1,39 @@
+@model StockViewModel
+@{ ViewData["Title"] = "Stock"; }
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h1 class="h3 mb-0">Stock on hand</h1>
+    <form method="get" class="d-flex gap-2">
+        <select name="warehouse" class="form-select form-select-sm" onchange="this.form.submit()">
+            <option value="">All warehouses</option>
+            @foreach (var code in Model.Warehouses)
+            {
+                <option value="@code" selected="@(code == Model.SelectedWarehouse)">@code</option>
+            }
+        </select>
+    </form>
+</div>
+
+<table class="table table-sm table-hover align-middle">
+    <thead><tr>
+        <th>SKU</th><th>Product</th><th>Category</th><th>Warehouse</th>
+        <th class="text-end">On hand</th><th class="text-end">Reorder at</th>
+    </tr></thead>
+    <tbody>
+    @foreach (var r in Model.Rows)
+    {
+        <tr class="@(r.IsLow ? "table-warning" : "")">
+            <td class="font-monospace">@r.Sku</td>
+            <td>@r.ProductName</td>
+            <td>@r.Category</td>
+            <td>@r.WarehouseCode</td>
+            <td class="text-end">
+                @if (r.Quantity == 0) { <span class="badge text-bg-danger">0</span> }
+                else { @r.Quantity }
+            </td>
+            <td class="text-end text-muted">@r.ReorderPoint</td>
+        </tr>
+    }
+    </tbody>
+</table>
+<p class="text-muted small">@Model.Rows.Count rows. Highlighted rows are below their reorder point.</p>

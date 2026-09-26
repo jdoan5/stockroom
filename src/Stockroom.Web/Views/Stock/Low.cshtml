@@ -1,0 +1,26 @@
+@model IReadOnlyList<LowStockRow>
+@{ ViewData["Title"] = "Low stock"; }
+
+<h1 class="h3 mb-3">Low stock <span class="badge text-bg-danger align-middle">@Model.Count</span></h1>
+
+<table class="table table-sm align-middle">
+    <thead><tr>
+        <th>SKU</th><th>Product</th><th>Warehouse</th>
+        <th class="text-end">On hand</th><th class="text-end">Reorder at</th>
+        <th class="text-end">Short by</th><th class="text-end">Suggested order</th>
+    </tr></thead>
+    <tbody>
+    @foreach (var r in Model)
+    {
+        <tr>
+            <td class="font-monospace">@r.Sku</td>
+            <td>@r.ProductName</td>
+            <td>@r.WarehouseCode</td>
+            <td class="text-end">@r.Quantity</td>
+            <td class="text-end text-muted">@r.ReorderPoint</td>
+            <td class="text-end text-danger fw-semibold">@r.Deficit</td>
+            <td class="text-end">@r.SuggestedOrderQty</td>
+        </tr>
+    }
+    </tbody>
+</table>

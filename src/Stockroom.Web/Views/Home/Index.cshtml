@@ -1,0 +1,56 @@
+@model DashboardViewModel
+@{ ViewData["Title"] = "Dashboard"; }
+
+<h1 class="h3 mb-4">Dashboard</h1>
+
+<div class="row g-3 mb-4">
+    <div class="col-sm-6 col-lg-3">
+        <a class="card text-decoration-none h-100" asp-controller="Stock" asp-action="Low">
+            <div class="card-body">
+                <div class="text-muted small">Items below reorder point</div>
+                <div class="display-6 @(Model.LowStockCount > 0 ? "text-danger" : "")">@Model.LowStockCount</div>
+            </div>
+        </a>
+    </div>
+    <div class="col-sm-6 col-lg-3">
+        <a class="card text-decoration-none h-100" asp-controller="PurchaseOrders" asp-action="Index">
+            <div class="card-body">
+                <div class="text-muted small">Open purchase orders</div>
+                <div class="display-6">@Model.OpenPurchaseOrders</div>
+            </div>
+        </a>
+    </div>
+    <div class="col-sm-6 col-lg-3">
+        <div class="card h-100"><div class="card-body">
+            <div class="text-muted small">Inventory at cost</div>
+            <div class="display-6">@Model.Valuation.Sum(v => v.ValuationAtCost).ToString("C0")</div>
+        </div></div>
+    </div>
+    <div class="col-sm-6 col-lg-3">
+        <div class="card h-100"><div class="card-body">
+            <div class="text-muted small">Units on hand</div>
+            <div class="display-6">@Model.Valuation.Sum(v => v.TotalUnits).ToString("N0")</div>
+        </div></div>
+    </div>
+</div>
+
+<h2 class="h5">Stock value by warehouse</h2>
+<table class="table table-sm align-middle">
+    <thead><tr>
+        <th>Warehouse</th><th class="text-end">SKUs</th><th class="text-end">Units</th>
+        <th class="text-end">At cost</th><th class="text-end">At retail</th>
+    </tr></thead>
+    <tbody>
+    @foreach (var v in Model.Valuation)
+    {
+        <tr>
+            <td><a asp-controller="Stock" asp-action="Index" asp-route-warehouse="@v.WarehouseCode">@v.WarehouseCode</a>
+                <span class="text-muted">@v.WarehouseName</span></td>
+            <td class="text-end">@v.DistinctSkus</td>
+            <td class="text-end">@v.TotalUnits.ToString("N0")</td>
+            <td class="text-end">@v.ValuationAtCost.ToString("C0")</td>
+            <td class="text-end">@v.ValuationAtRetail.ToString("C0")</td>
+        </tr>
+    }
+    </tbody>
+</table>
