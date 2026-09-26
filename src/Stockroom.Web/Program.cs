@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.HttpOverrides;
 using Stockroom.Web.Data;
 
 // Map snake_case columns (product_name) to PascalCase properties (ProductName).
@@ -8,7 +9,21 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllersWithViews();
 builder.Services.AddSingleton<InventoryRepository>();
 
+// In Azure Container Apps, HTTPS ends at Azure's proxy, which forwards plain HTTP
+// with X-Forwarded-Proto: https. Trusting those headers lets the app know the
+// original request was HTTPS, so HSTS works and nothing redirects in a loop.
+// Clearing the known-proxy lists is safe here only because the container is
+// reachable solely through that proxy.
+builder.Services.Configure<ForwardedHeadersOptions>(o =>
+{
+    o.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
+    o.KnownIPNetworks.Clear();
+    o.KnownProxies.Clear();
+});
+
 var app = builder.Build();
+
+app.UseForwardedHeaders();
 
 if (!app.Environment.IsDevelopment())
 {
