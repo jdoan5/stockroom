@@ -57,10 +57,10 @@ Connect from DataGrip: `localhost:1433`, database `Stockroom`, user `sa`, passwo
 |---|---|---|
 | Database | Azure SQL Database, serverless, **free offer** (100,000 vCore-seconds and 32 GB a month) | Pauses when idle and stops rather than bills when the free allowance runs out |
 | Web app | Azure Container Apps, 0.25 vCPU, scales to zero | Nothing runs, and nothing is billed, between visits |
-| Image | `ghcr.io/jdoan5/stockroom`, built by [`image.yml`](.github/workflows/image.yml) on every push to `src/` | The .NET SDK builds the image itself (`/t:PublishContainer`), no Dockerfile |
+| Image | `ghcr.io/jdoan5/stockroom`, built by [`image.yml`](.github/workflows/image.yml) on every push to `main` that changes `src/` | The .NET SDK builds the image itself (`/t:PublishContainer`), no Dockerfile |
 | Cost guard | A $5/month budget on the resource group, emailing at 50%, 100% and a forecast of 100% | So a mistake shows up as an email, not a bill |
 
-The same `db/` scripts run unchanged on Azure SQL, and `make azure-verify` passes.
+The same `db/` scripts run unchanged on Azure SQL, and `make azure-verify` passes on freshly seeded data.
 
 **The app can't write to a table directly.** It connects as a contained database
 user ([`db/07_app_user.sql`](db/07_app_user.sql)) that has `SELECT` on the schema
@@ -72,7 +72,7 @@ Server's *ownership chaining*). The password lives in a Container Apps secret,
 never in the repo.
 
 A paused serverless database doesn't make the first connection wait: it refuses
-it with error 40613 while it resumes, which takes a few seconds. So the app retries
+it with error 40613 while it resumes, which can take up to a minute. So the app retries
 opening the connection (never a command: re-running `transfer_stock` could move
 stock twice) instead of showing the first visitor an error page; see
 [`InventoryRepository.cs`](src/Stockroom.Web/Data/InventoryRepository.cs).
@@ -113,7 +113,7 @@ and nothing else: no tables, no procedures, no writes.
 **The model:** Import mode (a DirectQuery report would wake the paused database
 on every click), seven tables, seven single-direction relationships and 25 DAX
 measures in a `_Measures` table. "Low stock" in the report is the same rule as the
-web app's Low stock page, so the two always agree. Every number was checked
+web app's Low stock page, so the two agree as of each refresh. Every number was checked
 against SQL over the same views: 2,781 units, $220,008 at cost, 7 low-stock
 balances, a 25.2% fill rate on placed orders, and so on.
 

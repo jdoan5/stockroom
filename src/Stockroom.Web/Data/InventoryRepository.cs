@@ -22,14 +22,14 @@ public sealed class InventoryRepository(IConfiguration config, ILogger<Inventory
 
     // Azure SQL serverless pauses when nobody uses it, and the first connection after
     // that fails at once with error 40613 ("not currently available") while it resumes,
-    // which takes a few seconds. Retry opening the connection rather than show the first
+    // which can take up to a minute. Retry opening the connection rather than show the first
     // visitor an error page. Only the open is retried, never a command: running
     // transfer_stock again after an unclear failure could move the stock twice.
     private static SqlRetryLogicBaseProvider CreateOpenRetry(ILogger logger)
     {
         var retry = SqlConfigurableRetryFactory.CreateExponentialRetryProvider(new SqlRetryLogicOption
         {
-            NumberOfTries = 6,                              // well under a minute in all
+            NumberOfTries = 7,                              // up to about 80 seconds of retries
             DeltaTime = TimeSpan.FromSeconds(2),
             MaxTimeInterval = TimeSpan.FromSeconds(20),
             TransientErrors = [40613, 40197, 40501, 49918, 49919, 49920],   // Azure SQL "try again" errors
