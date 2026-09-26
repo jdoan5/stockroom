@@ -1,0 +1,8 @@
+.env
+.DS_Store
+bin/
+obj/
+.vs/
+*.user
+.idea/workspace.xml
+.idea/dataSources.local.xml

@@ -1,0 +1,17 @@
+services:
+  db:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    platform: linux/amd64        # no arm64 image exists; runs under Rosetta on Apple Silicon
+    container_name: stockroom-db
+    environment:
+      ACCEPT_EULA: ${ACCEPT_EULA:?Set ACCEPT_EULA=Y in .env once you accept the SQL Server license}
+      MSSQL_SA_PASSWORD: ${MSSQL_SA_PASSWORD:?Set MSSQL_SA_PASSWORD in .env}
+      MSSQL_PID: Developer       # free edition for development, not licensed for production
+    ports:
+      - "1433:1433"
+    volumes:
+      - stockroom-data:/var/opt/mssql
+      - ./db:/db:ro
+
+volumes:
+  stockroom-data:
