@@ -136,7 +136,7 @@ SELECT i.po_item_id,
        o.supplier_id,
        o.warehouse_id,
        i.product_id,
-       o.status AS po_status,
+       REPLACE(o.status, '_', ' ') AS po_status,             -- PARTIALLY RECEIVED, as the web app shows it
        CASE o.status WHEN 'DRAFT'              THEN 1
                      WHEN 'PLACED'             THEN 2
                      WHEN 'PARTIALLY_RECEIVED' THEN 3

@@ -3,7 +3,7 @@ export
 
 SQLCMD = docker exec -i stockroom-db /opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P "$$MSSQL_SA_PASSWORD" -C -b
 
-.PHONY: env up db verify down reset run azure-db azure-verify azure-app-user azure-report-user azure-deploy report-local report-save
+.PHONY: env up db verify down reset run azure-db azure-verify azure-app-user azure-report-user azure-allow-me azure-deploy report-local report-save
 
 env:     ## create .env with a random SA password (you still set ACCEPT_EULA)
 	@test -f .env || { cp .env.example .env; pw=$$(openssl rand -base64 18 | tr -d "/+=")Aa1!; sed -i "" "s|^MSSQL_SA_PASSWORD=.*|MSSQL_SA_PASSWORD=$$pw|" .env; echo "created .env"; }
@@ -46,6 +46,11 @@ azure-app-user:  ## create/refresh the least-privilege user the web app connects
 
 azure-report-user:  ## create/refresh the read-only user Power BI connects as
 	$(AZSQL) -v REPORT_USER="$$AZURE_SQL_REPORT_USER" REPORT_PASSWORD="$$AZURE_SQL_REPORT_PASSWORD" -i /db/08_report_user.sql
+
+# Home internet addresses change now and then; when Azure SQL says "Client with
+# IP address ... is not allowed", this moves the one firewall rule to where you are.
+azure-allow-me:  ## point the dev-mac firewall rule at this machine's public IP
+	@ip=$$(curl -s https://checkip.amazonaws.com); az sql server firewall-rule update -g $$AZURE_RESOURCE_GROUP -s $$AZURE_SQL_SERVER -n dev-mac --start-ip-address $$ip --end-ip-address $$ip --query "{rule:name, ip:startIpAddress}" -o tsv
 
 # Pins an exact image rather than :latest, so every deploy is a new revision and
 # rolling back is one command. image.yml only builds when src/ or the workflow
