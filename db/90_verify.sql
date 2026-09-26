@@ -78,6 +78,19 @@ ELSE BEGIN
      SET @fail += 1;
 END;
 
+-- 6. A DRAFT purchase order can't be received.
+--    Plain EXEC, not INSERT ... EXEC: a ROLLBACK inside a procedure called by
+--    INSERT ... EXEC raises error 3915, which would hide the real error.
+SET @msg = NULL;
+BEGIN TRY
+    EXEC dbo.receive_purchase_order 'PO-2026-0004';
+END TRY
+BEGIN CATCH
+    SET @msg = CONCAT(ERROR_NUMBER(), ' ', ERROR_MESSAGE());
+END CATCH;
+IF @msg LIKE '50011 %' PRINT '6. draft PO cannot be received ................ PASS';
+ELSE BEGIN PRINT '6. draft PO cannot be received ................ FAIL'; SET @fail += 1; END;
+
 PRINT '';
 IF @fail = 0 PRINT 'ALL CHECKS PASSED';
 ELSE THROW 50099, N'Verification failed.', 1;

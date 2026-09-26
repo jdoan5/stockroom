@@ -1,0 +1,57 @@
+@model TransferPageModel
+@{ ViewData["Title"] = "Transfer stock"; }
+
+<h1 class="h3 mb-3">Transfer stock</h1>
+
+<div class="row g-4">
+    <div class="col-lg-6">
+        <div id="transfer-result" role="status" aria-live="polite"></div>
+
+        <form id="transfer-form" asp-action="Transfer" method="post">
+            <div class="mb-3">
+                <label asp-for="Form.Sku" class="form-label"></label>
+                <select asp-for="Form.Sku" asp-items="Model.Products" class="form-select">
+                    <option value="">Choose a product…</option>
+                </select>
+                <span asp-validation-for="Form.Sku" class="text-danger small"></span>
+            </div>
+
+            <div class="row">
+                <div class="col mb-3">
+                    <label asp-for="Form.FromWarehouse" class="form-label"></label>
+                    <select asp-for="Form.FromWarehouse" asp-items="Model.Warehouses" class="form-select">
+                        <option value="">Choose…</option>
+                    </select>
+                    <span asp-validation-for="Form.FromWarehouse" class="text-danger small"></span>
+                </div>
+                <div class="col mb-3">
+                    <label asp-for="Form.ToWarehouse" class="form-label"></label>
+                    <select asp-for="Form.ToWarehouse" asp-items="Model.Warehouses" class="form-select">
+                        <option value="">Choose…</option>
+                    </select>
+                    <span asp-validation-for="Form.ToWarehouse" class="text-danger small"></span>
+                </div>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="Form.Quantity" class="form-label"></label>
+                <input asp-for="Form.Quantity" type="number" min="1" class="form-control" />
+                <span asp-validation-for="Form.Quantity" class="text-danger small"></span>
+            </div>
+
+            <button type="submit" id="transfer-submit" class="btn btn-primary">Transfer</button>
+        </form>
+    </div>
+
+    <div class="col-lg-6">
+        <h2 class="h6 text-muted">Stock for this product</h2>
+        <div id="sku-stock" data-url="@Url.Action("ForSku")">
+            <p class="text-muted small">Choose a product to see its stock in each warehouse.</p>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script src="~/js/transfer.js" asp-append-version="true"></script>
+}

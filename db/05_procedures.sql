@@ -63,10 +63,12 @@ BEGIN
     BEGIN TRY
         BEGIN TRANSACTION;
 
-        SELECT @po_id = po_id, @warehouse_id = warehouse_id
+        SELECT @po_id = po_id, @warehouse_id = warehouse_id, @status = status
         FROM dbo.purchase_orders WITH (UPDLOCK) WHERE po_number = @po_number;
 
         IF @po_id IS NULL THROW 50010, N'Unknown purchase order.', 1;
+        -- A DRAFT or CANCELLED order was never placed, so nothing should arrive for it.
+        IF @status IN ('DRAFT', 'CANCELLED') THROW 50011, N'Only placed orders can be received.', 1;
 
         SELECT @lines = COUNT(*), @units = COALESCE(SUM(quantity_ordered - quantity_received), 0)
         FROM dbo.purchase_order_items

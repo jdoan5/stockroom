@@ -1,3 +1,4 @@
+using System.Data;
 using Dapper;
 using Microsoft.Data.SqlClient;
 using Stockroom.Web.Models;
@@ -80,6 +81,47 @@ public sealed class InventoryRepository(IConfiguration config)
             ORDER BY deficit DESC, sku;
             """);
         return rows.AsList();
+    }
+
+    public async Task<IReadOnlyList<ProductOption>> GetProductsAsync()
+    {
+        await using var db = Connect();
+        var rows = await db.QueryAsync<ProductOption>(
+            "SELECT sku, name FROM dbo.products WHERE is_active = 1 ORDER BY sku;");
+        return rows.AsList();
+    }
+
+    public async Task<IReadOnlyList<StockRow>> GetStockForSkuAsync(string sku)
+    {
+        await using var db = Connect();
+        var rows = await db.QueryAsync<StockRow>("""
+            SELECT sku, product_name, category, warehouse_code, quantity, reorder_point, last_updated
+            FROM dbo.v_current_stock
+            WHERE sku = @sku
+            ORDER BY warehouse_code;
+            """, new { sku });
+        return rows.AsList();
+    }
+
+    // Writes go through the stored procedures, never raw INSERTs, so the rules
+    // (enough stock, all-or-nothing, triggers) live in one place: the database.
+    // Errors come back as SqlException; see ProcErrors for how they're shown.
+    public async Task<string> TransferStockAsync(string sku, string fromCode, string toCode, int qty)
+    {
+        await using var db = Connect();
+        return await db.QuerySingleAsync<string>(
+            "dbo.transfer_stock",
+            new { sku, from_code = fromCode, to_code = toCode, qty },
+            commandType: CommandType.StoredProcedure);
+    }
+
+    public async Task<string> ReceivePurchaseOrderAsync(string poNumber)
+    {
+        await using var db = Connect();
+        return await db.QuerySingleAsync<string>(
+            "dbo.receive_purchase_order",
+            new { po_number = poNumber },
+            commandType: CommandType.StoredProcedure);
     }
 
     public async Task<IReadOnlyList<PurchaseOrderRow>> GetPurchaseOrdersAsync()

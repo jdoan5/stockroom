@@ -1,0 +1,22 @@
+@model IReadOnlyList<StockRow>
+
+@if (Model.Count == 0)
+{
+    <p class="text-muted small">No stock recorded for this product.</p>
+}
+else
+{
+    <table class="table table-sm mb-0">
+        <thead><tr><th>Warehouse</th><th class="text-end">On hand</th><th class="text-end">Reorder at</th></tr></thead>
+        <tbody>
+        @foreach (var r in Model)
+        {
+            <tr class="@(r.IsLow ? "table-warning" : "")">
+                <td>@r.WarehouseCode</td>
+                <td class="text-end fw-semibold">@r.Quantity</td>
+                <td class="text-end text-muted">@r.ReorderPoint</td>
+            </tr>
+        }
+        </tbody>
+    </table>
+}
