@@ -3,7 +3,7 @@ export
 
 SQLCMD = docker exec -i stockroom-db /opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P "$$MSSQL_SA_PASSWORD" -C -b
 
-.PHONY: env up db verify down reset run azure-db azure-verify azure-app-user
+.PHONY: env up db verify down reset run azure-db azure-verify azure-app-user azure-deploy
 
 env:     ## create .env with a random SA password (you still set ACCEPT_EULA)
 	@test -f .env || { cp .env.example .env; pw=$$(openssl rand -base64 18 | tr -d "/+=")Aa1!; sed -i "" "s|^MSSQL_SA_PASSWORD=.*|MSSQL_SA_PASSWORD=$$pw|" .env; echo "created .env"; }
@@ -43,3 +43,12 @@ azure-verify:    ## run the checks against Azure SQL
 
 azure-app-user:  ## create/refresh the least-privilege user the web app connects as
 	$(AZSQL) -v APP_USER="$$AZURE_SQL_APP_USER" APP_PASSWORD="$$AZURE_SQL_APP_PASSWORD" -i /db/07_app_user.sql
+
+# Pins an exact image rather than :latest, so every deploy is a new revision and
+# rolling back is one command. image.yml only builds when src/ or the workflow
+# changes, so the tag is the last commit that touched those — a README-only
+# commit has no image of its own. Push first and let image.yml finish.
+IMAGE_SHA = $$(git log -1 --format=%H -- src .github/workflows/image.yml)
+
+azure-deploy:    ## run the latest built image in the Container App
+	az containerapp update -n ca-stockroom -g $$AZURE_RESOURCE_GROUP --image ghcr.io/jdoan5/stockroom:$(IMAGE_SHA) --query properties.latestRevisionName -o tsv
