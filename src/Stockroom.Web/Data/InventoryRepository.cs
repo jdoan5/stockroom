@@ -8,7 +8,7 @@ namespace Stockroom.Web.Data;
 // All reads go through the Stage 1 views, so the SQL lives in the database and
 // the same views feed the Power BI report later. Dapper, not EF Core: the
 // queries are plain SQL you can paste into DataGrip and run as-is.
-public sealed class InventoryRepository(IConfiguration config)
+public sealed class InventoryRepository(IConfiguration config, ILogger<InventoryRepository> logger)
 {
     private readonly string _connectionString =
         config.GetConnectionString("Stockroom")
@@ -16,7 +16,29 @@ public sealed class InventoryRepository(IConfiguration config)
             "Connection string 'Stockroom' is missing. Run the app with `make run`, "
             + "or set ConnectionStrings__Stockroom.");
 
-    private SqlConnection Connect() => new(_connectionString);
+    private readonly SqlRetryLogicBaseProvider _openRetry = CreateOpenRetry(logger);
+
+    private SqlConnection Connect() => new(_connectionString) { RetryLogicProvider = _openRetry };
+
+    // Azure SQL serverless pauses when nobody uses it, and the first connection after
+    // that fails at once with error 40613 ("not currently available") while it resumes,
+    // which takes a few seconds. Retry opening the connection rather than show the first
+    // visitor an error page. Only the open is retried, never a command: running
+    // transfer_stock again after an unclear failure could move the stock twice.
+    private static SqlRetryLogicBaseProvider CreateOpenRetry(ILogger logger)
+    {
+        var retry = SqlConfigurableRetryFactory.CreateExponentialRetryProvider(new SqlRetryLogicOption
+        {
+            NumberOfTries = 6,                              // well under a minute in all
+            DeltaTime = TimeSpan.FromSeconds(2),
+            MaxTimeInterval = TimeSpan.FromSeconds(20),
+            TransientErrors = [40613, 40197, 40501, 49918, 49919, 49920],   // Azure SQL "try again" errors
+        });
+        retry.Retrying += (_, e) => logger.LogWarning(
+            "Database not ready (error {Number}); retry {Attempt} in {Delay}",
+            (e.Exceptions[^1] as SqlException)?.Number, e.RetryCount, e.Delay);
+        return retry;
+    }
 
     public async Task<IReadOnlyList<ValuationRow>> GetValuationAsync()
     {

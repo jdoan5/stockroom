@@ -71,8 +71,11 @@ procedures can still write because they and the tables share an owner (SQL
 Server's *ownership chaining*). The password lives in a Container Apps secret,
 never in the repo.
 
-The connection string has `Connect Timeout=90` because a paused serverless
-database takes up to a minute to resume on the first connection.
+A paused serverless database doesn't make the first connection wait: it refuses
+it with error 40613 while it resumes, which takes a few seconds. So the app retries
+opening the connection (never a command: re-running `transfer_stock` could move
+stock twice) instead of showing the first visitor an error page; see
+[`InventoryRepository.cs`](src/Stockroom.Web/Data/InventoryRepository.cs).
 
 ```bash
 make azure-db           # load db/01..06 into Azure SQL; also re-seeds the live demo
