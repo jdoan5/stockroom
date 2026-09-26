@@ -1,0 +1,167 @@
+/// Home for the model's measures. Its only column is hidden, so Desktop shows it as a measure table.
+table _Measures
+
+	/// Units in stock right now.
+	measure 'Units on Hand' = SUM ( Stock[Quantity] )
+		formatString: #,0
+		displayFolder: Stock
+
+	/// Value of the stock on hand at unit cost.
+	measure 'Stock Value (Cost)' = SUM ( Stock[Value at Cost] )
+		formatString: \$#,0
+		displayFolder: Stock
+
+	/// Value of the stock on hand at unit price.
+	measure 'Stock Value (Retail)' = SUM ( Stock[Value at Retail] )
+		formatString: \$#,0
+		displayFolder: Stock
+
+	/// Retail value minus cost value of the stock on hand.
+	measure 'Potential Margin' = [Stock Value (Retail)] - [Stock Value (Cost)]
+		formatString: \$#,0
+		displayFolder: Stock
+
+	/// Potential margin as a share of the retail value.
+	measure 'Margin %' = DIVIDE ( [Potential Margin], [Stock Value (Retail)] )
+		formatString: 0.0%;-0.0%;0.0%
+		displayFolder: Stock
+
+	/// Number of product x warehouse balances.
+	measure 'Stock Positions' = COUNTROWS ( Stock )
+		formatString: #,0
+		displayFolder: Stock
+
+	/// Balances below their reorder point (out of stock included); 0 when there are none.
+	measure 'Low Stock Items' = COALESCE ( CALCULATE ( COUNTROWS ( Stock ), KEEPFILTERS ( Stock[Is Low Stock] = TRUE () ) ), 0 )
+		formatString: #,0
+		displayFolder: Stock
+
+	/// Balances with a quantity of zero that are below their reorder point; 0 when there are none.
+	measure 'Out of Stock Items' = COALESCE ( CALCULATE ( COUNTROWS ( Stock ), KEEPFILTERS ( Stock[Stock Status] = "Out of stock" ) ), 0 )
+		formatString: #,0
+		displayFolder: Stock
+
+	/// Sum of the reorder points.
+	measure 'Reorder Level' = SUM ( Stock[Reorder Point] )
+		formatString: #,0
+		displayFolder: Stock
+
+	/// Units needed to bring every low balance back up to its reorder point.
+	measure 'Units Below Reorder' = SUM ( Stock[Below Reorder Qty] )
+		formatString: #,0
+		displayFolder: Stock
+
+	/// Units to order: the reorder quantity, or the shortfall if that is larger.
+	measure 'Suggested Order Units' = SUM ( Stock[Suggested Order Qty] )
+		formatString: #,0
+		displayFolder: Stock
+
+	/// Background colour for a Stock Status cell: red for Out of stock, amber for Low, blank otherwise.
+	measure 'Status Color' =
+			SWITCH (
+			    SELECTEDVALUE ( Stock[Stock Status] ),
+			    "Out of stock", "#F4B6B6",
+			    "Low", "#FBE3A7"
+			)
+		displayFolder: Stock
+
+	/// Number of distinct purchase orders.
+	measure 'Purchase Orders' = DISTINCTCOUNT ( 'Purchase Order Line'[PO Number] )
+		formatString: #,0
+		displayFolder: Purchasing
+
+	/// Purchase orders placed but not fully received.
+	measure 'Open POs' =
+			CALCULATE (
+			    DISTINCTCOUNT ( 'Purchase Order Line'[PO Number] ),
+			    'Purchase Order Line'[Is Open] = TRUE ()
+			)
+		formatString: #,0
+		displayFolder: Purchasing
+
+	/// Open purchase orders past their expected date.
+	measure 'Overdue POs' =
+			CALCULATE (
+			    DISTINCTCOUNT ( 'Purchase Order Line'[PO Number] ),
+			    'Purchase Order Line'[Is Overdue] = TRUE ()
+			)
+		formatString: #,0
+		displayFolder: Purchasing
+
+	/// Value ordered (quantity ordered x unit cost).
+	measure 'PO Value' = SUM ( 'Purchase Order Line'[Ordered Value] )
+		formatString: \$#,0
+		displayFolder: Purchasing
+
+	/// Value received so far (quantity received x unit cost).
+	measure 'PO Value Received' = SUM ( 'Purchase Order Line'[Received Value] )
+		formatString: \$#,0
+		displayFolder: Purchasing
+
+	/// Value still to be received on open purchase orders.
+	measure 'Open PO Value' = SUM ( 'Purchase Order Line'[Open Value] )
+		formatString: \$#,0
+		displayFolder: Purchasing
+
+	/// Units ordered.
+	measure 'Units Ordered' = SUM ( 'Purchase Order Line'[Quantity Ordered] )
+		formatString: #,0
+		displayFolder: Purchasing
+
+	/// Units received.
+	measure 'Units Received' = SUM ( 'Purchase Order Line'[Quantity Received] )
+		formatString: #,0
+		displayFolder: Purchasing
+
+	/// Units received as a share of units ordered, over orders that were placed (not DRAFT or CANCELLED).
+	measure 'Fill Rate %' =
+			VAR placed =
+			    CALCULATETABLE (
+			        'Purchase Order Line',
+			        KEEPFILTERS ( NOT 'Purchase Order Line'[PO Status] IN { "DRAFT", "CANCELLED" } )
+			    )
+			RETURN
+			    DIVIDE (
+			        SUMX ( placed, 'Purchase Order Line'[Quantity Received] ),
+			        SUMX ( placed, 'Purchase Order Line'[Quantity Ordered] )
+			    )
+		formatString: 0.0%;-0.0%;0.0%
+		displayFolder: Purchasing
+
+	/// Average days from order to receipt per purchase order; orders not yet received are ignored.
+	measure 'Avg Lead Time (days)' =
+			AVERAGEX (
+			    VALUES ( 'Purchase Order Line'[PO Number] ),
+			    CALCULATE ( MAX ( 'Purchase Order Line'[Lead Time Days] ) )
+			)
+		formatString: 0.0
+		displayFolder: Purchasing
+
+	/// Units that came in (receipts, transfers in, positive adjustments).
+	measure 'Units In' = SUM ( Movement[Quantity In] )
+		formatString: #,0
+		displayFolder: Movements
+
+	/// Units that went out (shipments, transfers out, negative adjustments).
+	measure 'Units Out' = SUM ( Movement[Quantity Out] )
+		formatString: #,0
+		displayFolder: Movements
+
+	/// Units in minus units out.
+	measure 'Net Units' = SUM ( Movement[Signed Quantity] )
+		formatString: #,0
+		displayFolder: Movements
+
+	column Value
+		dataType: int64
+		isHidden
+		formatString: 0
+		summarizeBy: none
+		isNameInferred
+		isDataTypeInferred
+		sourceColumn: [Value]
+
+	partition _Measures = calculated
+		mode: import
+		source = {1}
+

@@ -1,0 +1,157 @@
+/// One row per purchase order line, header fields repeated (source: view rpt.fact_po_line).
+table 'Purchase Order Line'
+
+	column 'PO Line ID'
+		dataType: int64
+		isHidden
+		formatString: 0
+		summarizeBy: none
+		sourceColumn: po_item_id
+
+	column 'PO Number'
+		dataType: string
+		summarizeBy: none
+		sourceColumn: po_number
+
+	column 'Supplier ID'
+		dataType: int64
+		isHidden
+		formatString: 0
+		summarizeBy: none
+		sourceColumn: supplier_id
+
+	column 'Warehouse ID'
+		dataType: int64
+		isHidden
+		formatString: 0
+		summarizeBy: none
+		sourceColumn: warehouse_id
+
+	column 'Product ID'
+		dataType: int64
+		isHidden
+		formatString: 0
+		summarizeBy: none
+		sourceColumn: product_id
+
+	column 'PO Status'
+		dataType: string
+		summarizeBy: none
+		sourceColumn: po_status
+		sortByColumn: 'PO Status Sort'
+
+	column 'PO Status Sort'
+		dataType: int64
+		isHidden
+		formatString: 0
+		summarizeBy: none
+		sourceColumn: po_status_sort
+
+	column 'Order Date'
+		dataType: dateTime
+		formatString: Short Date
+		summarizeBy: none
+		sourceColumn: order_date
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column 'Expected Date'
+		dataType: dateTime
+		formatString: Short Date
+		summarizeBy: none
+		sourceColumn: expected_date
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column 'Received Date'
+		dataType: dateTime
+		formatString: Short Date
+		summarizeBy: none
+		sourceColumn: received_date
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	/// Days from order to receipt; blank until the order is received.
+	column 'Lead Time Days'
+		dataType: int64
+		isHidden
+		formatString: 0
+		summarizeBy: none
+		sourceColumn: lead_time_days
+
+	column 'Quantity Ordered'
+		dataType: int64
+		isHidden
+		formatString: 0
+		summarizeBy: none
+		sourceColumn: quantity_ordered
+
+	column 'Quantity Received'
+		dataType: int64
+		isHidden
+		formatString: 0
+		summarizeBy: none
+		sourceColumn: quantity_received
+
+	column 'Quantity Open'
+		dataType: int64
+		isHidden
+		formatString: 0
+		summarizeBy: none
+		sourceColumn: quantity_open
+
+	column 'Unit Cost'
+		dataType: decimal
+		isHidden
+		formatString: \$#,0.00
+		summarizeBy: none
+		sourceColumn: unit_cost
+
+	column 'Ordered Value'
+		dataType: decimal
+		isHidden
+		formatString: \$#,0.00
+		summarizeBy: none
+		sourceColumn: ordered_value
+
+	column 'Received Value'
+		dataType: decimal
+		isHidden
+		formatString: \$#,0.00
+		summarizeBy: none
+		sourceColumn: received_value
+
+	column 'Open Value'
+		dataType: decimal
+		isHidden
+		formatString: \$#,0.00
+		summarizeBy: none
+		sourceColumn: open_value
+
+	/// True for PLACED and PARTIALLY_RECEIVED orders (not DRAFT, CANCELLED or RECEIVED).
+	column 'Is Open'
+		dataType: boolean
+		formatString: """TRUE"";""TRUE"";""FALSE"""
+		summarizeBy: none
+		sourceColumn: is_open
+
+	/// Open and past its expected date, as of the last refresh.
+	column 'Is Overdue'
+		dataType: boolean
+		formatString: """TRUE"";""TRUE"";""FALSE"""
+		summarizeBy: none
+		sourceColumn: is_overdue
+
+	partition 'Purchase Order Line' = m
+		mode: import
+		source =
+				let
+				    Source = Sql.Database(Server, Database, [ConnectionTimeout = #duration(0, 0, 2, 0)]),
+				    View = Source{[Schema = "rpt", Item = "fact_po_line"]}[Data],
+				    Columns = Table.SelectColumns(View, {"po_item_id", "po_number", "supplier_id", "warehouse_id", "product_id", "po_status", "po_status_sort", "order_date", "expected_date", "received_date", "lead_time_days", "quantity_ordered", "quantity_received", "quantity_open", "unit_cost", "ordered_value", "received_value", "open_value", "is_open", "is_overdue"}),
+				    Typed = Table.TransformColumnTypes(Columns, {{"unit_cost", Currency.Type}, {"ordered_value", Currency.Type}, {"received_value", Currency.Type}, {"open_value", Currency.Type}})
+				in
+				    Typed
+
+	annotation PBI_ResultType = Table
+

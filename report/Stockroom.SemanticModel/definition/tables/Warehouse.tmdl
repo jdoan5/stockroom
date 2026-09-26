@@ -1,0 +1,51 @@
+/// One row per warehouse (source: view rpt.dim_warehouse).
+table Warehouse
+
+	column 'Warehouse ID'
+		dataType: int64
+		isHidden
+		isKey
+		formatString: 0
+		summarizeBy: none
+		sourceColumn: warehouse_id
+
+	/// Warehouse code, e.g. WH-EAST.
+	column Warehouse
+		dataType: string
+		summarizeBy: none
+		sourceColumn: warehouse_code
+
+	column 'Warehouse Name'
+		dataType: string
+		summarizeBy: none
+		sourceColumn: warehouse_name
+
+	column City
+		dataType: string
+		summarizeBy: none
+		sourceColumn: city
+
+	column Country
+		dataType: string
+		summarizeBy: none
+		sourceColumn: country
+
+	column 'Is Active'
+		dataType: boolean
+		isHidden
+		formatString: """TRUE"";""TRUE"";""FALSE"""
+		summarizeBy: none
+		sourceColumn: is_active
+
+	partition Warehouse = m
+		mode: import
+		source =
+				let
+				    Source = Sql.Database(Server, Database, [ConnectionTimeout = #duration(0, 0, 2, 0)]),
+				    View = Source{[Schema = "rpt", Item = "dim_warehouse"]}[Data],
+				    Columns = Table.SelectColumns(View, {"warehouse_id", "warehouse_code", "warehouse_name", "city", "country", "is_active"})
+				in
+				    Columns
+
+	annotation PBI_ResultType = Table
+

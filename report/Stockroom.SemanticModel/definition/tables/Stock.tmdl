@@ -1,0 +1,93 @@
+/// Current balance, one row per product x warehouse (source: view rpt.fact_stock).
+table Stock
+
+	column 'Product ID'
+		dataType: int64
+		isHidden
+		formatString: 0
+		summarizeBy: none
+		sourceColumn: product_id
+
+	column 'Warehouse ID'
+		dataType: int64
+		isHidden
+		formatString: 0
+		summarizeBy: none
+		sourceColumn: warehouse_id
+
+	column Quantity
+		dataType: int64
+		isHidden
+		formatString: 0
+		summarizeBy: none
+		sourceColumn: quantity
+
+	column 'Reorder Point'
+		dataType: int64
+		isHidden
+		formatString: 0
+		summarizeBy: none
+		sourceColumn: reorder_point
+
+	/// True when the quantity is below the reorder point (out of stock included).
+	column 'Is Low Stock'
+		dataType: boolean
+		formatString: """TRUE"";""TRUE"";""FALSE"""
+		summarizeBy: none
+		sourceColumn: is_low_stock
+
+	/// Out of stock, Low or OK.
+	column 'Stock Status'
+		dataType: string
+		summarizeBy: none
+		sourceColumn: stock_status
+		sortByColumn: 'Stock Status Sort'
+
+	column 'Stock Status Sort'
+		dataType: int64
+		isHidden
+		formatString: 0
+		summarizeBy: none
+		sourceColumn: stock_status_sort
+
+	column 'Below Reorder Qty'
+		dataType: int64
+		isHidden
+		formatString: 0
+		summarizeBy: none
+		sourceColumn: units_below_reorder
+
+	column 'Suggested Order Qty'
+		dataType: int64
+		isHidden
+		formatString: 0
+		summarizeBy: none
+		sourceColumn: suggested_order_qty
+
+	column 'Value at Cost'
+		dataType: decimal
+		isHidden
+		formatString: \$#,0.00
+		summarizeBy: none
+		sourceColumn: value_at_cost
+
+	column 'Value at Retail'
+		dataType: decimal
+		isHidden
+		formatString: \$#,0.00
+		summarizeBy: none
+		sourceColumn: value_at_retail
+
+	partition Stock = m
+		mode: import
+		source =
+				let
+				    Source = Sql.Database(Server, Database, [ConnectionTimeout = #duration(0, 0, 2, 0)]),
+				    View = Source{[Schema = "rpt", Item = "fact_stock"]}[Data],
+				    Columns = Table.SelectColumns(View, {"product_id", "warehouse_id", "quantity", "reorder_point", "is_low_stock", "stock_status", "stock_status_sort", "units_below_reorder", "suggested_order_qty", "value_at_cost", "value_at_retail"}),
+				    Typed = Table.TransformColumnTypes(Columns, {{"value_at_cost", Currency.Type}, {"value_at_retail", Currency.Type}})
+				in
+				    Typed
+
+	annotation PBI_ResultType = Table
+

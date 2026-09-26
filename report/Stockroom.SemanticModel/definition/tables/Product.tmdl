@@ -1,0 +1,63 @@
+/// One row per product (source: view rpt.dim_product).
+table Product
+
+	column 'Product ID'
+		dataType: int64
+		isHidden
+		isKey
+		formatString: 0
+		summarizeBy: none
+		sourceColumn: product_id
+
+	column SKU
+		dataType: string
+		summarizeBy: none
+		sourceColumn: sku
+
+	column Product
+		dataType: string
+		summarizeBy: none
+		sourceColumn: product_name
+
+	column Category
+		dataType: string
+		summarizeBy: none
+		sourceColumn: category
+
+	column Subcategory
+		dataType: string
+		summarizeBy: none
+		sourceColumn: subcategory
+
+	column 'Unit Cost'
+		dataType: decimal
+		formatString: \$#,0.00
+		summarizeBy: none
+		sourceColumn: unit_cost
+
+	column 'Unit Price'
+		dataType: decimal
+		formatString: \$#,0.00
+		summarizeBy: none
+		sourceColumn: unit_price
+
+	column 'Is Active'
+		dataType: boolean
+		isHidden
+		formatString: """TRUE"";""TRUE"";""FALSE"""
+		summarizeBy: none
+		sourceColumn: is_active
+
+	partition Product = m
+		mode: import
+		source =
+				let
+				    Source = Sql.Database(Server, Database, [ConnectionTimeout = #duration(0, 0, 2, 0)]),
+				    View = Source{[Schema = "rpt", Item = "dim_product"]}[Data],
+				    Columns = Table.SelectColumns(View, {"product_id", "sku", "product_name", "category", "subcategory", "unit_cost", "unit_price", "is_active"}),
+				    Typed = Table.TransformColumnTypes(Columns, {{"unit_cost", Currency.Type}, {"unit_price", Currency.Type}})
+				in
+				    Typed
+
+	annotation PBI_ResultType = Table
+

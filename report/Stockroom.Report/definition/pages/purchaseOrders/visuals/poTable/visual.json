@@ -1,0 +1,189 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.9.0/schema.json",
+  "name": "poTable",
+  "position": {
+    "x": 532,
+    "y": 224,
+    "z": 6000,
+    "height": 480,
+    "width": 732,
+    "tabOrder": 6000
+  },
+  "visual": {
+    "visualType": "tableEx",
+    "query": {
+      "queryState": {
+        "Values": {
+          "projections": [
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Purchase Order Line"
+                    }
+                  },
+                  "Property": "PO Number"
+                }
+              },
+              "queryRef": "Purchase Order Line.PO Number",
+              "nativeQueryRef": "PO Number"
+            },
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Supplier"
+                    }
+                  },
+                  "Property": "Supplier"
+                }
+              },
+              "queryRef": "Supplier.Supplier",
+              "nativeQueryRef": "Supplier"
+            },
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Warehouse"
+                    }
+                  },
+                  "Property": "Warehouse"
+                }
+              },
+              "queryRef": "Warehouse.Warehouse",
+              "nativeQueryRef": "Warehouse"
+            },
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Purchase Order Line"
+                    }
+                  },
+                  "Property": "PO Status"
+                }
+              },
+              "queryRef": "Purchase Order Line.PO Status",
+              "nativeQueryRef": "PO Status"
+            },
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Purchase Order Line"
+                    }
+                  },
+                  "Property": "Order Date"
+                }
+              },
+              "queryRef": "Purchase Order Line.Order Date",
+              "nativeQueryRef": "Order Date"
+            },
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Purchase Order Line"
+                    }
+                  },
+                  "Property": "Expected Date"
+                }
+              },
+              "queryRef": "Purchase Order Line.Expected Date",
+              "nativeQueryRef": "Expected Date"
+            },
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "_Measures"
+                    }
+                  },
+                  "Property": "PO Value"
+                }
+              },
+              "queryRef": "_Measures.PO Value",
+              "nativeQueryRef": "PO Value"
+            },
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "_Measures"
+                    }
+                  },
+                  "Property": "PO Value Received"
+                }
+              },
+              "queryRef": "_Measures.PO Value Received",
+              "nativeQueryRef": "PO Value Received"
+            },
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "_Measures"
+                    }
+                  },
+                  "Property": "Fill Rate %"
+                }
+              },
+              "queryRef": "_Measures.Fill Rate %",
+              "nativeQueryRef": "Fill Rate %"
+            }
+          ]
+        }
+      },
+      "sortDefinition": {
+        "sort": [
+          {
+            "field": {
+              "Column": {
+                "Expression": {
+                  "SourceRef": {
+                    "Entity": "Purchase Order Line"
+                  }
+                },
+                "Property": "Order Date"
+              }
+            },
+            "direction": "Descending"
+          }
+        ]
+      }
+    },
+    "visualContainerObjects": {
+      "title": [
+        {
+          "properties": {
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "true"
+                }
+              }
+            },
+            "text": {
+              "expr": {
+                "Literal": {
+                  "Value": "'Purchase orders'"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "drillFilterOtherVisuals": true
+  }
+}

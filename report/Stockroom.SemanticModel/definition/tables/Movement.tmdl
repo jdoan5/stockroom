@@ -1,0 +1,84 @@
+/// One row per stock ledger entry (source: view rpt.fact_movement).
+table Movement
+
+	column 'Movement ID'
+		dataType: int64
+		isHidden
+		formatString: 0
+		summarizeBy: none
+		sourceColumn: movement_id
+
+	column 'Movement Date'
+		dataType: dateTime
+		formatString: Short Date
+		summarizeBy: none
+		sourceColumn: movement_date
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column 'Product ID'
+		dataType: int64
+		isHidden
+		formatString: 0
+		summarizeBy: none
+		sourceColumn: product_id
+
+	column 'Warehouse ID'
+		dataType: int64
+		isHidden
+		formatString: 0
+		summarizeBy: none
+		sourceColumn: warehouse_id
+
+	column 'Movement Type'
+		dataType: string
+		summarizeBy: none
+		sourceColumn: movement_type
+
+	/// Units moved: negative for OUT and TRANSFER_OUT; an ADJUSTMENT carries its own sign.
+	column 'Signed Quantity'
+		dataType: int64
+		isHidden
+		formatString: 0
+		summarizeBy: none
+		sourceColumn: signed_quantity
+
+	column 'Quantity In'
+		dataType: int64
+		isHidden
+		formatString: 0
+		summarizeBy: none
+		sourceColumn: units_in
+
+	column 'Quantity Out'
+		dataType: int64
+		isHidden
+		formatString: 0
+		summarizeBy: none
+		sourceColumn: units_out
+
+	column 'Value at Cost'
+		dataType: decimal
+		isHidden
+		formatString: \$#,0.00
+		summarizeBy: none
+		sourceColumn: value_at_cost
+
+	column 'Reference Type'
+		dataType: string
+		summarizeBy: none
+		sourceColumn: reference_type
+
+	partition Movement = m
+		mode: import
+		source =
+				let
+				    Source = Sql.Database(Server, Database, [ConnectionTimeout = #duration(0, 0, 2, 0)]),
+				    View = Source{[Schema = "rpt", Item = "fact_movement"]}[Data],
+				    Columns = Table.SelectColumns(View, {"movement_id", "movement_date", "product_id", "warehouse_id", "movement_type", "signed_quantity", "units_in", "units_out", "value_at_cost", "reference_type"}),
+				    Typed = Table.TransformColumnTypes(Columns, {{"value_at_cost", Currency.Type}})
+				in
+				    Typed
+
+	annotation PBI_ResultType = Table
+

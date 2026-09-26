@@ -6,3 +6,9 @@ obj/
 *.user
 .idea/workspace.xml
 .idea/dataSources.local.xml
+
+# Power BI: Desktop's per-user settings and data cache, and the working copy
+# that `make report-local` creates with the real server name in it.
+**/.pbi/localSettings.json
+**/.pbi/cache.abf
+report.local/

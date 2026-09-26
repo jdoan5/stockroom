@@ -1,0 +1,2 @@
+# Power BI Desktop writes CRLF; keep it that way so a save doesn't rewrite every line.
+report/** text eol=crlf

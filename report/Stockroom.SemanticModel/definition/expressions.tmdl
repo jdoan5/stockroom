@@ -1,0 +1,10 @@
+/// Azure SQL logical server (FQDN). Placeholder in the repo; make report-local puts the real name into a gitignored copy.
+expression Server = "YOUR-SERVER.database.windows.net" meta [IsParameterQuery=true, Type="Text", IsParameterQueryRequired=true]
+
+	annotation PBI_ResultType = Text
+
+/// Database name on that server.
+expression Database = "Stockroom" meta [IsParameterQuery=true, Type="Text", IsParameterQueryRequired=true]
+
+	annotation PBI_ResultType = Text
+
