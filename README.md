@@ -9,6 +9,9 @@ ported from PostgreSQL to T-SQL.
 — the first page after a quiet spell can take up to a minute while the database
 wakes up (see [Azure](#azure)). It's shared, so go ahead and transfer stock.
 
+**Power BI report:** [PDF](docs/Stockroom.pdf), [screenshots](#power-bi-report),
+and the report itself as text in [`report/`](report).
+
 ## Stages
 
 | # | Stage | Status |
@@ -17,7 +20,7 @@ wakes up (see [Azure](#azure)). It's shared, so go ahead and transfer stock.
 | 2 | ASP.NET Core MVC pages — dashboard, stock, low stock, purchase orders | ✅ done |
 | 3 | jQuery forms — transfer stock, receive a purchase order | ✅ done |
 | 4 | Live on Azure — Azure SQL Database, Container Apps | ✅ done |
-| 5 | Power BI report on the reporting views | |
+| 5 | Power BI report — a reporting schema, a TMDL model and a PBIR report, all in git | ✅ done |
 
 ## Run it
 
@@ -27,7 +30,7 @@ Needs Docker. On Apple Silicon, SQL Server runs under Rosetta (there is no arm64
 make env      # creates .env with a random SA password
               # then set ACCEPT_EULA=Y in .env if you accept the SQL Server license
 make up       # start SQL Server
-make db       # create the database and run db/01..05
+make db       # create the database and run db/01..06
 make verify   # run the checks
 make run      # web app at http://localhost:5271
 ```
@@ -72,14 +75,65 @@ The connection string has `Connect Timeout=90` because a paused serverless
 database takes up to a minute to resume on the first connection.
 
 ```bash
-make azure-db        # load db/01..05 into Azure SQL; also re-seeds the live demo
-make azure-verify    # run the checks there (re-seed first: they expect fresh data)
-make azure-app-user  # create or re-key the app's database user
-make azure-deploy    # run the latest built image in the Container App
+make azure-db           # load db/01..06 into Azure SQL; also re-seeds the live demo
+make azure-verify       # run the checks there (re-seed first: they expect fresh data)
+make azure-app-user     # create or re-key the app's database user
+make azure-report-user  # create or re-key Power BI's read-only database user
+make azure-allow-me     # move the firewall rule to this machine's public IP
+make azure-deploy       # run the latest built image in the Container App
 ```
 
 These need the `AZURE_*` values in `.env` (see `.env.example`), the local SQL
 Server container running (its `sqlcmd` does the work), and `az login`.
+
+## Power BI report
+
+![Overview page](docs/report-overview.png)
+
+Three pages: **Overview** (stock value by category, units in and out by warehouse,
+positions by status), **Low stock** (every balance below its reorder point, with
+the suggested order quantity) and **Purchase orders** (value by supplier and
+status, fill rate, lead time). The whole report is in the [PDF](docs/Stockroom.pdf).
+
+| Low stock | Purchase orders |
+|---|---|
+| ![Low stock page](docs/report-low-stock.png) | ![Purchase orders page](docs/report-purchase-orders.png) |
+
+**The data:** Power BI reads six star-schema views in their own schema,
+[`rpt`](db/06_reporting.sql): three dimensions (product, warehouse, supplier) and
+three facts (the current balances, the movement ledger, purchase order lines).
+They're separate from the `dbo` views the web app uses, so each side can change
+shape without breaking the other. Power BI connects as its own database user
+([`db/08_report_user.sql`](db/08_report_user.sql)) that can `SELECT` from `rpt`
+and nothing else: no tables, no procedures, no writes.
+
+**The model:** Import mode (a DirectQuery report would wake the paused database
+on every click), seven tables, seven single-direction relationships and 25 DAX
+measures in a `_Measures` table. "Low stock" in the report is the same rule as the
+web app's Low stock page, so the two always agree. Every number was checked
+against SQL over the same views: 2,781 units, $220,008 at cost, 7 low-stock
+balances, a 25.2% fill rate on placed orders, and so on.
+
+**The files:** the report is a Power BI Project (`.pbip`): the model in TMDL and
+the report pages in PBIR, both plain text, so a change to a measure or a visual is
+a readable diff. It was written as text first, then opened, refreshed and saved in
+Power BI Desktop, which added its own IDs and settings.
+
+To open it (Power BI Desktop is Windows-only; a Parallels VM works):
+
+```bash
+make report-local    # copy report/ to report.local/ with the server name filled in
+```
+
+Then open `report.local/Stockroom.pbip` in Power BI Desktop and click **Refresh**.
+When asked, choose **Database** and enter the report user and password from `.env`.
+After saving in Desktop, `make report-save` copies the changes back into `report/`.
+The server name stays out of the repo: `report/` has a placeholder, and only the
+gitignored `report.local/` has the real one. If refresh says your IP address isn't
+allowed, run `make azure-allow-me`.
+
+There's no live link to the report: Power BI's *Publish to web* needs a work or
+school account and a Power BI license. The PDF and the screenshots stand in for it.
 
 ## Porting notes: PostgreSQL → SQL Server
 
