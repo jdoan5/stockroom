@@ -25,6 +25,11 @@ var app = builder.Build();
 
 app.UseForwardedHeaders();
 
+// The views format money with "C0", which follows the current culture. A Linux
+// container sets no locale, so .NET falls back to the invariant culture and prints
+// ¤220,008 instead of $220,008. Pin the culture rather than rely on the host's.
+app.UseRequestLocalization("en-US");
+
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Home/Error");
