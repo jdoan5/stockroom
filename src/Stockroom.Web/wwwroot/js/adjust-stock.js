@@ -1,13 +1,13 @@
-// Transfer stock: validate in the browser, post with AJAX, show the result
+// Adjust stock: validate in the browser, post with AJAX, show the result
 // without reloading the page, and keep the stock panel current.
 $(function () {
-    var $form = $("#transfer-form");
+    var $form = $("#adjust-form");
     if (!$form.length) return;
 
-    var $result = $("#transfer-result");
+    var $result = $("#adjust-result");
     var $stock = $("#sku-stock");
     var $sku = $("#Form_Sku");
-    var $button = $("#transfer-submit");
+    var $button = $("#adjust-submit");
 
     function showAlert(kind, text) {
         // .text(), never .html(): messages can contain values the user sent.
@@ -57,6 +57,7 @@ $(function () {
     });
 
     $sku.on("change", loadStock);
+    loadStock();   // /Stock/Adjust?sku=... arrives with the product already picked
 
     $form.on("submit", function (e) {
         e.preventDefault();
@@ -64,13 +65,13 @@ $(function () {
         clearServerErrors();
 
         // Disable while the request is in flight: a double-click would otherwise
-        // send two transfers.
-        $button.prop("disabled", true).text("Transferring…");
+        // apply the adjustment twice.
+        $button.prop("disabled", true).text("Adjusting…");
 
         $.ajax({ url: $form.attr("action"), method: "POST", data: $form.serialize() })
             .done(function (res) {
                 showAlert("success", res.message);
-                $("#Form_Quantity").val("");
+                $("#Form_Quantity").val("");   // keep the reason: a count often covers several warehouses
                 loadStock();
             })
             .fail(function (xhr) {
@@ -81,7 +82,7 @@ $(function () {
                 }
             })
             .always(function () {
-                $button.prop("disabled", false).text("Transfer");
+                $button.prop("disabled", false).text("Adjust");
             });
     });
 });

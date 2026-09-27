@@ -91,6 +91,118 @@ END CATCH;
 IF @msg LIKE '50011 %' PRINT '6. draft PO cannot be received ................ PASS';
 ELSE BEGIN PRINT '6. draft PO cannot be received ................ FAIL'; SET @fail += 1; END;
 
+-- 7. add_product stores the SKU trimmed and upper-cased, and gives the product a
+--    zero balance in each of the 3 warehouses, so it is on the Stock page and,
+--    being below its reorder point, on Low stock before anything is received.
+--    INSERT ... EXEC keeps the success message to check. If add_product fails
+--    inside it, all we see is 3915 (see check 6); TRY/CATCH still makes that a
+--    FAIL line and lets the other checks run. Run the EXEC on its own for the cause.
+DELETE @result;   -- table variables ignore ROLLBACK, so check 5's row is still here
+SET @msg = NULL;
+BEGIN TRY
+    BEGIN TRAN;
+    INSERT INTO @result EXEC dbo.add_product ' test-new-001 ', N' Test Widget ', N'Tools', 5.00, 9.99, 10, 50;
+    DECLARE @new_sku VARCHAR(40) = (SELECT sku FROM dbo.products WHERE sku = 'TEST-NEW-001');
+    DECLARE @new_zero INT = (SELECT COUNT(*) FROM dbo.v_current_stock WHERE sku = 'TEST-NEW-001' AND quantity = 0);
+    DECLARE @new_low INT = (SELECT COUNT(*) FROM dbo.v_low_stock_items WHERE sku = 'TEST-NEW-001');
+    ROLLBACK;
+END TRY
+BEGIN CATCH
+    IF @@TRANCOUNT > 0 ROLLBACK;
+    SET @msg = CONCAT(ERROR_NUMBER(), ' ', ERROR_MESSAGE());
+END CATCH;
+IF @new_sku = 'TEST-NEW-001' COLLATE Latin1_General_BIN2 AND @new_zero = 3 AND @new_low = 3
+   AND (SELECT message FROM @result) = N'Added TEST-NEW-001 — Test Widget.'
+     PRINT '7. add product: 0 on hand in 3 warehouses ..... PASS';
+ELSE BEGIN
+     PRINT CONCAT('7. add product: ', @new_sku, ', ', @new_zero, ' zero balance(s), ',
+                  @new_low, ' on Low stock ... FAIL ', @msg);
+     SET @fail += 1;
+END;
+
+-- 7b. Only active warehouses get a balance: with WH-CENT closed, the new product
+--     has 2 balances and none at WH-CENT. Same TRY/CATCH as check 7.
+SET @msg = NULL;
+BEGIN TRY
+    BEGIN TRAN;
+    UPDATE dbo.warehouses SET is_active = 0 WHERE code = 'WH-CENT';
+    INSERT INTO @result EXEC dbo.add_product 'TEST-NEW-002', N'Test Widget', N'Tools', 5.00, 9.99, 10, 50;
+    DECLARE @new_bal INT = (SELECT COUNT(*) FROM dbo.v_current_stock WHERE sku = 'TEST-NEW-002');
+    DECLARE @new_bal_closed INT = (SELECT COUNT(*) FROM dbo.v_current_stock
+                                   WHERE sku = 'TEST-NEW-002' AND warehouse_code = 'WH-CENT');
+    ROLLBACK;
+END TRY
+BEGIN CATCH
+    IF @@TRANCOUNT > 0 ROLLBACK;
+    SET @msg = CONCAT(ERROR_NUMBER(), ' ', ERROR_MESSAGE());
+END CATCH;
+IF @new_bal = 2 AND @new_bal_closed = 0 PRINT '7b. closed warehouse gets no balance .......... PASS';
+ELSE BEGIN
+     PRINT CONCAT('7b. closed warehouse: ', @new_bal, ' balance(s), ', @new_bal_closed,
+                  ' at WH-CENT ... FAIL ', @msg);
+     SET @fail += 1;
+END;
+
+-- 8. add_product refuses a SKU that already exists, in any case, and writes
+--    nothing. Plain EXEC, as in check 6.
+SET @before = (SELECT COUNT(*) FROM dbo.products);
+SET @msg = NULL;
+BEGIN TRY
+    EXEC dbo.add_product 'elec-aud-001', N'Duplicate', N'Audio', 1.00, 2.00, 10, 50;
+END TRY
+BEGIN CATCH
+    SET @msg = CONCAT(ERROR_NUMBER(), ' ', ERROR_MESSAGE());
+END CATCH;
+SET @after = (SELECT COUNT(*) FROM dbo.products);
+IF @after = @before AND @msg LIKE '50020 %' PRINT '8. duplicate SKU rejected, nothing written .... PASS';
+ELSE BEGIN PRINT '8. duplicate SKU rejected, nothing written .... FAIL'; SET @fail += 1; END;
+
+-- 9. adjust_stock -3 then +5 moves the balance by exactly +2, as two signed
+--    ADJUSTMENT rows in the ledger (the trigger does the balance). Same
+--    TRY/CATCH as check 7.
+DELETE @result;
+SET @msg = NULL;
+SET @after = NULL;   -- else it still holds check 8's count if the TRY fails early
+BEGIN TRY
+    BEGIN TRAN;
+    SET @before = (SELECT quantity FROM dbo.stock_levels WHERE product_id = @p AND warehouse_id = @w);
+    DECLARE @adj_before INT = (SELECT COUNT(*) FROM dbo.stock_movements
+                               WHERE product_id = @p AND warehouse_id = @w AND movement_type = 'ADJUSTMENT');
+    INSERT INTO @result EXEC dbo.adjust_stock 'ELEC-AUD-001', 'WH-EAST', -3, N'Damaged';
+    INSERT INTO @result EXEC dbo.adjust_stock 'ELEC-AUD-001', 'WH-EAST', 5, N'Cycle count';
+    SET @after = (SELECT quantity FROM dbo.stock_levels WHERE product_id = @p AND warehouse_id = @w);
+    DECLARE @adj_after INT = (SELECT COUNT(*) FROM dbo.stock_movements
+                              WHERE product_id = @p AND warehouse_id = @w AND movement_type = 'ADJUSTMENT');
+    ROLLBACK;
+END TRY
+BEGIN CATCH
+    IF @@TRANCOUNT > 0 ROLLBACK;
+    SET @msg = CONCAT(ERROR_NUMBER(), ' ', ERROR_MESSAGE());
+END CATCH;
+IF @after = @before + 2 AND @adj_after = @adj_before + 2
+   AND EXISTS (SELECT 1 FROM @result
+               WHERE message = CONCAT(N'Adjusted ELEC-AUD-001 at WH-EAST by +5. On hand: ', @after, N'.'))
+     PRINT '9. adjust -3 then +5: +2, two ledger rows ..... PASS';
+ELSE BEGIN
+     PRINT CONCAT('9. adjust -3 then +5: ', @before, ' -> ', @after, ', ',
+                  @adj_after - @adj_before, ' ledger row(s) ... FAIL ', @msg);
+     SET @fail += 1;
+END;
+
+-- 10. An adjustment that would take stock below zero is refused and writes
+--     nothing. Plain EXEC, as in check 6.
+SET @before = (SELECT COUNT(*) FROM dbo.stock_movements);
+SET @msg = NULL;
+BEGIN TRY
+    EXEC dbo.adjust_stock 'ELEC-AUD-001', 'WH-EAST', -999999, N'Lost';
+END TRY
+BEGIN CATCH
+    SET @msg = CONCAT(ERROR_NUMBER(), ' ', ERROR_MESSAGE());
+END CATCH;
+SET @after = (SELECT COUNT(*) FROM dbo.stock_movements);
+IF @after = @before AND @msg LIKE '50033 %' PRINT '10. adjustment below zero writes nothing ...... PASS';
+ELSE BEGIN PRINT '10. adjustment below zero writes nothing ...... FAIL'; SET @fail += 1; END;
+
 PRINT '';
 IF @fail = 0 PRINT 'ALL CHECKS PASSED';
 ELSE THROW 50099, N'Verification failed.', 1;

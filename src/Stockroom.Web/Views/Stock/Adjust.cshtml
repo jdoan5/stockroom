@@ -1,0 +1,64 @@
+@model AdjustPageModel
+@{ ViewData["Title"] = "Adjust stock"; }
+
+<h1 class="h3 mb-3">Adjust stock</h1>
+
+<div class="row g-4">
+    <div class="col-lg-6">
+        <div id="adjust-result" role="status" aria-live="polite"></div>
+
+        <form id="adjust-form" asp-action="Adjust" method="post">
+            <div class="mb-3">
+                <label asp-for="Form.Sku" class="form-label"></label>
+                <select asp-for="Form.Sku" asp-items="Model.Products" class="form-select">
+                    <option value="">Choose a product…</option>
+                </select>
+                <span asp-validation-for="Form.Sku" class="text-danger small"></span>
+            </div>
+
+            <div class="row">
+                <div class="col mb-3">
+                    <label asp-for="Form.Warehouse" class="form-label"></label>
+                    <select asp-for="Form.Warehouse" asp-items="Model.Warehouses" class="form-select">
+                        <option value="">Choose…</option>
+                    </select>
+                    <span asp-validation-for="Form.Warehouse" class="text-danger small"></span>
+                </div>
+                <div class="col mb-3">
+                    <label asp-for="Form.Quantity" class="form-label"></label>
+                    <input asp-for="Form.Quantity" type="number" class="form-control" aria-describedby="quantity-help" />
+                    <div id="quantity-help" class="form-text">Use a minus sign to remove stock, e.g. -3.</div>
+                    <span asp-validation-for="Form.Quantity" class="text-danger small"></span>
+                </div>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="Form.Reason" class="form-label"></label>
+                <input asp-for="Form.Reason" class="form-control" list="reason-suggestions" />
+                <datalist id="reason-suggestions">
+                    <option value="Cycle count"></option>
+                    <option value="Damaged"></option>
+                    <option value="Lost"></option>
+                    <option value="Found"></option>
+                    <option value="Opening stock"></option>
+                    <option value="Return to stock"></option>
+                </datalist>
+                <span asp-validation-for="Form.Reason" class="text-danger small"></span>
+            </div>
+
+            <button type="submit" id="adjust-submit" class="btn btn-primary">Adjust</button>
+        </form>
+    </div>
+
+    <div class="col-lg-6">
+        <h2 class="h6 text-muted">Stock for this product</h2>
+        <div id="sku-stock" data-url="@Url.Action("ForSku")">
+            <p class="text-muted small">Choose a product to see its stock in each warehouse.</p>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script src="~/js/adjust-stock.js" asp-append-version="true"></script>
+}

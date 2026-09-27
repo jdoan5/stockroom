@@ -55,6 +55,39 @@ public class StockController(InventoryRepository repo) : Controller
         }
     }
 
+    // GET /Stock/Adjust?sku=ELEC-AUD-001 — the sku is optional; Add product links
+    // here with it so the new product is already picked.
+    [HttpGet]
+    public async Task<IActionResult> Adjust(string? sku)
+    {
+        var products = await repo.GetProductsAsync();
+        var warehouses = await repo.GetWarehouseCodesAsync();
+        return View(new AdjustPageModel(
+            new AdjustModel { Sku = sku },
+            products.Select(p => new SelectListItem($"{p.Sku} — {p.Name}", p.Sku)).ToList(),
+            warehouses.Select(w => new SelectListItem(w, w)).ToList()));
+    }
+
+    // POST /Stock/Adjust — same JSON answers as Transfer.
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> Adjust([Bind(Prefix = "Form")] AdjustModel form)
+    {
+        if (!ModelState.IsValid)
+            return BadRequest(new { errors = ModelState.ToErrorDictionary() });
+
+        try
+        {
+            var message = await repo.AdjustStockAsync(
+                form.Sku!, form.Warehouse!, form.Quantity!.Value, form.Reason!);
+            return Json(new { message });
+        }
+        catch (SqlException ex) when (ProcErrors.TryMap(ex, out var field, out var text))
+        {
+            return BadRequest(new { errors = new Dictionary<string, string[]> { [field] = [text] } });
+        }
+    }
+
     // GET /Stock/ForSku?sku=ELEC-AUD-001 — a small HTML fragment jQuery drops into the page.
     [HttpGet]
     public async Task<IActionResult> ForSku(string sku) =>

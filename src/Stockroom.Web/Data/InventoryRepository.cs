@@ -113,6 +113,20 @@ public sealed class InventoryRepository(IConfiguration config, ILogger<Inventory
         return rows.AsList();
     }
 
+    // Two levels (Electronics > Audio). Sorting on the top-level name first puts
+    // each subcategory straight after its parent.
+    public async Task<IReadOnlyList<CategoryOption>> GetCategoriesAsync()
+    {
+        await using var db = Connect();
+        var rows = await db.QueryAsync<CategoryOption>("""
+            SELECT c.name, p.name AS parent_name
+            FROM dbo.categories c
+            LEFT JOIN dbo.categories p ON p.category_id = c.parent_id
+            ORDER BY COALESCE(p.name, c.name), IIF(p.name IS NULL, 0, 1), c.name;
+            """);
+        return rows.AsList();
+    }
+
     public async Task<IReadOnlyList<StockRow>> GetStockForSkuAsync(string sku)
     {
         await using var db = Connect();
@@ -126,7 +140,7 @@ public sealed class InventoryRepository(IConfiguration config, ILogger<Inventory
     }
 
     // Writes go through the stored procedures, never raw INSERTs, so the rules
-    // (enough stock, all-or-nothing, triggers) live in one place: the database.
+    // (enough stock, unique SKUs, all-or-nothing, triggers) live in one place: the database.
     // Errors come back as SqlException; see ProcErrors for how they're shown.
     public async Task<string> TransferStockAsync(string sku, string fromCode, string toCode, int qty)
     {
@@ -134,6 +148,32 @@ public sealed class InventoryRepository(IConfiguration config, ILogger<Inventory
         return await db.QuerySingleAsync<string>(
             "dbo.transfer_stock",
             new { sku, from_code = fromCode, to_code = toCode, qty },
+            commandType: CommandType.StoredProcedure);
+    }
+
+    public async Task<string> AddProductAsync(
+        string sku, string name, string category, decimal unitCost, decimal unitPrice,
+        int reorderPoint, int reorderQuantity)
+    {
+        await using var db = Connect();
+        return await db.QuerySingleAsync<string>(
+            "dbo.add_product",
+            new
+            {
+                sku, name, category,
+                unit_cost = unitCost, unit_price = unitPrice,
+                reorder_point = reorderPoint, reorder_quantity = reorderQuantity,
+            },
+            commandType: CommandType.StoredProcedure);
+    }
+
+    // qty is signed: +5 adds stock, -3 removes it.
+    public async Task<string> AdjustStockAsync(string sku, string warehouseCode, int qty, string reason)
+    {
+        await using var db = Connect();
+        return await db.QuerySingleAsync<string>(
+            "dbo.adjust_stock",
+            new { sku, warehouse_code = warehouseCode, qty, reason },
             commandType: CommandType.StoredProcedure);
     }
 

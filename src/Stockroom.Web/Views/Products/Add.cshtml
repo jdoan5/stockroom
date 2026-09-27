@@ -1,0 +1,75 @@
+@model AddProductPageModel
+@{ ViewData["Title"] = "Add product"; }
+
+<h1 class="h3 mb-3">Add product</h1>
+
+<div class="row g-4">
+    <div class="col-lg-6">
+        <div id="add-product-result" role="status" aria-live="polite"
+             data-adjust-url="@Url.Action("Adjust", "Stock")" data-stock-url="@Url.Action("Index", "Stock")"></div>
+
+        <form id="add-product-form" asp-action="Add" method="post">
+            <div class="mb-3">
+                <label asp-for="Form.Sku" class="form-label"></label>
+                <input asp-for="Form.Sku" class="form-control" autocomplete="off" spellcheck="false" aria-describedby="sku-help" />
+                <div id="sku-help" class="form-text">Letters, numbers and hyphens, e.g. TOOL-HAM-001. Saved in capitals.</div>
+                <span asp-validation-for="Form.Sku" class="text-danger small"></span>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="Form.Name" class="form-label"></label>
+                <input asp-for="Form.Name" class="form-control" autocomplete="off" />
+                <span asp-validation-for="Form.Name" class="text-danger small"></span>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="Form.Category" class="form-label"></label>
+                <select asp-for="Form.Category" asp-items="Model.Categories" class="form-select">
+                    <option value="">Choose a category…</option>
+                </select>
+                <span asp-validation-for="Form.Category" class="text-danger small"></span>
+            </div>
+
+            <div class="row">
+                <div class="col mb-3">
+                    <label asp-for="Form.UnitCost" class="form-label"></label>
+                    <input asp-for="Form.UnitCost" type="number" step="0.01" class="form-control" />
+                    <span asp-validation-for="Form.UnitCost" class="text-danger small"></span>
+                </div>
+                <div class="col mb-3">
+                    <label asp-for="Form.UnitPrice" class="form-label"></label>
+                    <input asp-for="Form.UnitPrice" type="number" step="0.01" class="form-control" />
+                    <span asp-validation-for="Form.UnitPrice" class="text-danger small"></span>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col mb-3">
+                    <label asp-for="Form.ReorderPoint" class="form-label"></label>
+                    <input asp-for="Form.ReorderPoint" type="number" class="form-control" />
+                    <span asp-validation-for="Form.ReorderPoint" class="text-danger small"></span>
+                </div>
+                <div class="col mb-3">
+                    <label asp-for="Form.ReorderQuantity" class="form-label"></label>
+                    <input asp-for="Form.ReorderQuantity" type="number" class="form-control" />
+                    <span asp-validation-for="Form.ReorderQuantity" class="text-danger small"></span>
+                </div>
+            </div>
+
+            <button type="submit" id="add-product-submit" class="btn btn-primary">Add product</button>
+        </form>
+    </div>
+
+    <div class="col-lg-6">
+        <h2 class="h6 text-muted">What happens next</h2>
+        <p class="text-muted small">
+            A new product starts at 0 in every warehouse, so it shows on Low stock until
+            stock arrives. To record stock you already have, use Adjust stock.
+        </p>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script src="~/js/add-product.js" asp-append-version="true"></script>
+}

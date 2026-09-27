@@ -1,26 +1,32 @@
-// Transfer stock: validate in the browser, post with AJAX, show the result
-// without reloading the page, and keep the stock panel current.
+// Add product: validate in the browser, post with AJAX, then show the result
+// with links to the next steps and clear the form for the next product.
 $(function () {
-    var $form = $("#transfer-form");
+    var $form = $("#add-product-form");
     if (!$form.length) return;
 
-    var $result = $("#transfer-result");
-    var $stock = $("#sku-stock");
+    var $result = $("#add-product-result");
     var $sku = $("#Form_Sku");
-    var $button = $("#transfer-submit");
+    var $button = $("#add-product-submit");
 
     function showAlert(kind, text) {
         // .text(), never .html(): messages can contain values the user sent.
         $result.html($('<div class="alert py-2"></div>').addClass("alert-" + kind).text(text));
     }
 
-    function loadStock() {
-        var sku = $sku.val();
-        if (!sku) {
-            $stock.html('<p class="text-muted small">Choose a product to see its stock in each warehouse.</p>');
-            return;
-        }
-        $stock.load($stock.data("url") + "?sku=" + encodeURIComponent(sku));
+    // The message plus two links. Built with .text() and .attr() for the same
+    // reason as showAlert: the SKU came from the user.
+    function showAdded(message, sku) {
+        var $links = $('<div class="mt-1"></div>')
+            .append($('<a class="alert-link"></a>')
+                .attr("href", $result.data("adjust-url") + "?sku=" + encodeURIComponent(sku))
+                .text("Adjust stock for " + sku))
+            .append(" · ")
+            .append($('<a class="alert-link"></a>')
+                .attr("href", $result.data("stock-url"))
+                .text("See it on the Stock page"));
+        $result.html($('<div class="alert alert-success py-2"></div>')
+            .append($("<div></div>").text(message))
+            .append($links));
     }
 
     function clearServerErrors() {
@@ -29,7 +35,7 @@ $(function () {
              .removeClass("field-validation-error").addClass("field-validation-valid");
     }
 
-    // The server answers 400 with { errors: { Quantity: ["..."] } }. Put each
+    // The server answers 400 with { errors: { Sku: ["..."] } }. Put each
     // message in the same span jQuery Validate uses, so server-side and
     // client-side errors look identical. An empty field name is form-wide.
     function showServerErrors(errors) {
@@ -56,22 +62,23 @@ $(function () {
         }
     });
 
-    $sku.on("change", loadStock);
-
     $form.on("submit", function (e) {
         e.preventDefault();
         if (!$form.valid()) return;   // jQuery Validate, driven by the model's data annotations
         clearServerErrors();
 
+        // The database stores the SKU trimmed and in capitals; the links use the same.
+        var sku = $sku.val().trim().toUpperCase();
+
         // Disable while the request is in flight: a double-click would otherwise
-        // send two transfers.
-        $button.prop("disabled", true).text("Transferring…");
+        // send the same product twice.
+        $button.prop("disabled", true).text("Adding…");
 
         $.ajax({ url: $form.attr("action"), method: "POST", data: $form.serialize() })
             .done(function (res) {
-                showAlert("success", res.message);
-                $("#Form_Quantity").val("");
-                loadStock();
+                showAdded(res.message, sku);
+                $form[0].reset();   // back to the page's defaults (reorder point 10, quantity 50)
+                $sku.trigger("focus");
             })
             .fail(function (xhr) {
                 if (xhr.status === 400 && xhr.responseJSON && xhr.responseJSON.errors) {
@@ -81,7 +88,7 @@ $(function () {
                 }
             })
             .always(function () {
-                $button.prop("disabled", false).text("Transfer");
+                $button.prop("disabled", false).text("Add product");
             });
     });
 });
