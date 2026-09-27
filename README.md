@@ -21,6 +21,7 @@ and the report itself as text in [`report/`](report).
 | 3 | jQuery forms — transfer stock, receive a purchase order | ✅ done |
 | 4 | Live on Azure — Azure SQL Database, Container Apps | ✅ done |
 | 5 | Power BI report — a reporting schema, a TMDL model and a PBIR report, all in git | ✅ done |
+| 6 | Add product and Adjust stock pages | ✅ done |
 
 ## Run it
 
@@ -45,9 +46,14 @@ The write paths are jQuery over AJAX: **Transfer stock** validates in the browse
 (jQuery unobtrusive validation, driven by the C# data annotations), posts to the
 `transfer_stock` procedure, and live-reloads the product's stock panel; **Receive**
 on the purchase orders page calls `receive_purchase_order` and reloads just the
-table. Errors the procedures `THROW` (50001–50011) are mapped to the form field
-they belong to, so "Insufficient stock at WH-WEST: have 235, need 9999" appears
-under Quantity. Both endpoints require an anti-forgery token.
+table. **Add product** calls `add_product`, which refuses a duplicate SKU and gives
+the new product a zero balance in every active warehouse, so it shows on Stock and Low
+stock straight away. **Adjust stock** records a signed change with a reason (a
+cycle count, damage, found stock) through `adjust_stock`: one `ADJUSTMENT` row in
+the ledger, never an edit to the balance, and never below zero. Errors the
+procedures `THROW` (50001–50034) are mapped to the form field they belong to, so
+"Insufficient stock at WH-WEST: have 235, need 9999" appears under Quantity. Every
+write endpoint requires an anti-forgery token.
 
 Connect from DataGrip: `localhost:1433`, database `Stockroom`, user `sa`, password from `.env`.
 
@@ -64,9 +70,10 @@ The same `db/` scripts run unchanged on Azure SQL, and `make azure-verify` passe
 
 **The app can't write to a table directly.** It connects as a contained database
 user ([`db/07_app_user.sql`](db/07_app_user.sql)) that has `SELECT` on the schema
-and `EXECUTE` on the two procedures — nothing else. `INSERT`, `UPDATE` and
-`DELETE` fail with *permission denied*, so the rules in `transfer_stock` and
-`receive_purchase_order` hold even for someone holding the app's password. The
+and `EXECUTE` on the four procedures — nothing else. `INSERT`, `UPDATE` and
+`DELETE` fail with *permission denied*, so the rules in the procedures hold even
+for someone holding the app's password. A grant belongs to one procedure, so after
+adding a procedure, run `make azure-db` and then `make azure-app-user`. The
 procedures can still write because they and the tables share an owner (SQL
 Server's *ownership chaining*). The password lives in a Container Apps secret,
 never in the repo.
